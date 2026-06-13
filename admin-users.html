@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Minerale — Kelola User</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.modal-overlay{position:fixed;inset:0;background:rgba(0,21,51,0.6);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:20px;padding:28px;width:100%;max-width:480px;transform:translateY(16px);transition:transform 0.2s;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal-title{font-size:18px;font-weight:800;color:#0D2137;margin-bottom:20px}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;font-weight:700;color:#4A6580;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px}
+.fi,.fs{width:100%;padding:10px 14px;border:1.5px solid #DCE8F5;border-radius:10px;font-size:13px;font-family:inherit;color:#0D2137;background:#fff;outline:none}
+.fi:focus,.fs:focus{border-color:#00AEEF;box-shadow:0 0 0 3px rgba(0,174,239,0.1)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pw-wrap{position:relative}
+.pw-wrap .fi{padding-right:40px}
+.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#8AADC4}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.btn-cancel{padding:10px 20px;background:#F0F7FF;color:#4A6580;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-save{padding:10px 22px;background:linear-gradient(135deg,#00AEEF,#0086C3);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,21,51,0.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.confirm-overlay.show{opacity:1;pointer-events:all}
+.confirm-box{background:#fff;border-radius:16px;padding:24px;max-width:360px;width:100%}
+.confirm-title{font-size:16px;font-weight:800;margin-bottom:8px}
+.confirm-text{font-size:13px;color:#4A6580;margin-bottom:20px;line-height:1.6}
+.confirm-btns{display:flex;gap:10px;justify-content:flex-end}
+.btn-c-cancel{padding:9px 18px;background:#F0F7FF;color:#4A6580;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-c-ok{padding:9px 18px;background:#EF5350;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+.note-box{background:#FFFBEB;border:1px solid#FDE68A;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400E;margin-top:-6px;margin-bottom:14px;line-height:1.6;display:none}
+</style>
+</head>
+<body>
+<nav class="topnav" id="topnav"></nav>
+<div class="page-wrap" style="margin-top:76px">
+
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
+    <div class="kpi-card"><div class="kpi-label">Total User</div><div class="kpi-value" id="sTotal">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Admin</div><div class="kpi-value" id="sAdmin" style="color:#7C3AED">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Project Manager</div><div class="kpi-value" id="sPM" style="color:#00AEEF">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Team Leader</div><div class="kpi-value" id="sTL" style="color:#2E7D32">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Lainnya</div><div class="kpi-value" id="sOth" style="color:#F59E0B">0</div></div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input type="text" class="table-search" placeholder="Cari nama, email, role..." oninput="renderTable(this.value)">
+      <button class="btn-export" style="background:linear-gradient(135deg,#00AEEF,#0086C3)" onclick="openModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Tambah User
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>No</th><th>Nama</th><th>Email / Username</th><th>Passcode</th><th>Role</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody id="userTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOv" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Tambah User Baru</div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Nama Lengkap *</label><input type="text" class="fi" id="fNama" placeholder="NAMA LENGKAP"></div>
+      <div class="fg"><label class="fl">Role *</label>
+        <select class="fs" id="fRole" onchange="onRoleChange()">
+          <option value="">-- Pilih Role --</option>
+          <option value="admin">Admin</option>
+          <option value="pm">Project Manager</option>
+          <option value="ac">Area Coordinator</option>
+          <option value="tl">Team Leader</option>
+          <option value="client">Client</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Email *</label><input type="email" class="fi" id="fEmail" placeholder="nama@leminerale.co.id"></div>
+    <div class="fg"><label class="fl">Passcode *</label>
+      <div class="pw-wrap">
+        <input type="password" class="fi" id="fPass" placeholder="Min. 4 karakter">
+        <button class="pw-eye" type="button" onclick="togglePw('fPass')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="note-box" id="roleNote"></div>
+    <div class="fg"><label class="fl">Status</label>
+      <select class="fs" id="fStatus"><option value="active">Aktif</option><option value="inactive">Nonaktif</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-save" onclick="saveUser()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirmOv">
+  <div class="confirm-box">
+    <div class="confirm-title">Hapus User?</div>
+    <div class="confirm-text" id="confirmText"></div>
+    <div class="confirm-btns">
+      <button class="btn-c-cancel" onclick="closeConfirm()">Batal</button>
+      <button class="btn-c-ok" onclick="confirmDelete()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+const STORAGE_KEY = 'lm_users';
+let editId = null, deleteId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!checkAuth()) return;
+  if (!CAN_MANAGE.includes(CURRENT_USER.role)) {
+    alert('Halaman ini hanya untuk Admin & Project Manager.');
+    window.location.href='index.html'; return;
+  }
+  buildNav('admin-users');
+  renderTable();
+});
+
+function loadUsers() {
+  try { const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):DEFAULT_USERS; }
+  catch(e) { return DEFAULT_USERS; }
+}
+function saveUsers(users) { localStorage.setItem(STORAGE_KEY, JSON.stringify(users)); }
+
+function renderTable(q='') {
+  const users = loadUsers();
+  const lower = q.toLowerCase();
+  document.getElementById('sTotal').textContent = users.length;
+  document.getElementById('sAdmin').textContent = users.filter(u=>u.role==='admin').length;
+  document.getElementById('sPM').textContent    = users.filter(u=>u.role==='pm').length;
+  document.getElementById('sTL').textContent    = users.filter(u=>u.role==='tl').length;
+  document.getElementById('sOth').textContent   = users.filter(u=>!['admin','pm','tl'].includes(u.role)).length;
+
+  const filtered = users.filter(u=>
+    u.nama.toLowerCase().includes(lower)||
+    u.username.toLowerCase().includes(lower)||
+    u.role.toLowerCase().includes(lower)
+  );
+
+  const roleLabel = {admin:'Admin',pm:'Project Manager',ac:'Area Coordinator',tl:'Team Leader',client:'Client'};
+  const roleColor = {admin:'badge-admin',pm:'badge-pm',ac:'badge-chatbot',tl:'badge-newreg',client:'badge-manual'};
+
+  document.getElementById('userTbody').innerHTML = filtered.map((u,i)=>`<tr>
+    <td style="color:#8AADC4">${i+1}</td>
+    <td><strong>${esc(u.nama)}</strong></td>
+    <td style="font-size:12px;color:#4A6580">${esc(u.username)}</td>
+    <td><code style="background:#F0F7FF;padding:2px 8px;border-radius:5px;font-size:11px">${'•'.repeat(Math.min(u.password.length,8))}</code></td>
+    <td><span class="badge ${roleColor[u.role]||'badge-manual'}">${roleLabel[u.role]||u.role}</span></td>
+    <td><span class="badge ${u.status==='active'?'badge-active':'badge-inactive'}">${u.status==='active'?'Aktif':'Nonaktif'}</span></td>
+    <td>
+      <div style="display:flex;gap:6px">
+        <button style="padding:4px 10px;background:#EBF4FF;color:#00AEEF;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer" onclick="openEdit(${u.id})">Edit</button>
+        <button style="padding:4px 10px;background:#F0F7FF;color:#4A6580;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer" onclick="toggleStatus(${u.id})">${u.status==='active'?'Nonaktif':'Aktifkan'}</button>
+        <button style="padding:4px 10px;background:#FFEBEE;color:#EF5350;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer" onclick="openDelete(${u.id})">Hapus</button>
+      </div>
+    </td>
+  </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:32px;color:#8AADC4">Tidak ada user</td></tr>';
+}
+
+function openModal(id=null) {
+  editId=id;
+  document.getElementById('modalTitle').textContent=id?'Edit User':'Tambah User Baru';
+  if (id) {
+    const u=loadUsers().find(x=>x.id===id);
+    if (u) { document.getElementById('fNama').value=u.nama; document.getElementById('fEmail').value=u.username; document.getElementById('fPass').value=u.password; document.getElementById('fRole').value=u.role; document.getElementById('fStatus').value=u.status; onRoleChange(); }
+  } else {
+    ['fNama','fEmail','fPass'].forEach(id=>{document.getElementById(id).value='';});
+    document.getElementById('fRole').value=''; document.getElementById('fStatus').value='active'; onRoleChange();
+  }
+  document.getElementById('modalOv').classList.add('show');
+}
+function openEdit(id){openModal(id);}
+function closeModal(){document.getElementById('modalOv').classList.remove('show');editId=null;}
+function closeModalOutside(e){if(e.target===document.getElementById('modalOv'))closeModal();}
+
+function onRoleChange() {
+  const role = document.getElementById('fRole').value;
+  const note = document.getElementById('roleNote');
+  if (['rsm','tl','mpp'].includes(role)) {
+    note.style.display='block';
+    note.innerHTML=`⚠️ User dengan role <strong>${role.toUpperCase()}</strong> dapat melihat <strong>semua data</strong> sesuai kebijakan.`;
+  } else { note.style.display='none'; }
+}
+
+function saveUser() {
+  const nama=document.getElementById('fNama').value.trim();
+  const email=document.getElementById('fEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('fPass').value.trim();
+  const role=document.getElementById('fRole').value;
+  const status=document.getElementById('fStatus').value;
+  if (!nama){showToast('Nama wajib diisi','err');return;}
+  if (!email){showToast('Email wajib diisi','err');return;}
+  if (!pass||pass.length<4){showToast('Passcode min 4 karakter','err');return;}
+  if (!role){showToast('Role wajib dipilih','err');return;}
+  const users=loadUsers();
+  if (users.find(u=>u.username.toLowerCase()===email&&u.id!==editId)){showToast('Email sudah digunakan','err');return;}
+  if (editId) {
+    const idx=users.findIndex(u=>u.id===editId);
+    users[idx]={...users[idx],nama:nama.toUpperCase(),username:email,password:pass,role,status};
+    showToast('User berhasil diupdate ✓','ok');
+  } else {
+    const newId=Math.max(0,...users.map(u=>u.id))+1;
+    users.push({id:newId,nama:nama.toUpperCase(),username:email,password:pass,role,status});
+    showToast('User berhasil ditambahkan ✓','ok');
+  }
+  saveUsers(users);renderTable();closeModal();
+}
+
+function openDelete(id){
+  deleteId=id;
+  const u=loadUsers().find(x=>x.id===id);
+  document.getElementById('confirmText').textContent=`Hapus user "${u?.nama}"? Tindakan ini tidak bisa dibatalkan.`;
+  document.getElementById('confirmOv').classList.add('show');
+}
+function closeConfirm(){document.getElementById('confirmOv').classList.remove('show');deleteId=null;}
+function confirmDelete(){
+  if (!deleteId) return;
+  saveUsers(loadUsers().filter(u=>u.id!==deleteId));
+  renderTable();closeConfirm();showToast('User dihapus','ok');
+}
+function toggleStatus(id){
+  const users=loadUsers();const idx=users.findIndex(u=>u.id===id);
+  users[idx].status=users[idx].status==='active'?'inactive':'active';
+  saveUsers(users);renderTable();showToast('Status diubah ✓','ok');
+}
+function togglePw(id){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
+</script>
+</body>
+</html>

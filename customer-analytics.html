@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Minerale — Customer Analytics</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.metric-section{margin-bottom:20px}
+.ms-title{font-size:14px;font-weight:800;color:#0D2137;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--lm-blue-light);display:flex;align-items:center;gap:8px}
+.breakdown-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.breakdown-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center}
+.bc-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.bc-val{font-size:24px;font-weight:800;color:var(--text-primary);line-height:1}
+.bc-sub{font-size:11px;color:var(--text-muted);margin-top:4px}
+.bc-delta{font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px;margin-top:4px;display:inline-block}
+.delta-p{background:#DCFCE7;color:#16A34A}
+.delta-n{background:#FEE2E2;color:#DC2626}
+.delta-z{background:#F1F5F9;color:#64748B}
+
+.ca-table{width:100%;border-collapse:collapse;font-size:12px}
+.ca-table th{background:var(--lm-blue-pale);padding:8px 12px;text-align:center;font-weight:700;color:var(--lm-blue-dark);font-size:10px;white-space:nowrap;border-bottom:2px solid var(--lm-blue-light)}
+.ca-table th.sticky-col{text-align:left;position:sticky;left:0;z-index:2;background:var(--lm-blue-pale)}
+.ca-table td{padding:7px 12px;text-align:center;border-bottom:1px solid #F0F7FF;white-space:nowrap}
+.ca-table td.sticky-col{text-align:left;position:sticky;left:0;background:var(--white);font-weight:600;color:var(--text-primary);z-index:1}
+.ca-table tr:hover td{background:var(--lm-blue-pale)}
+.ca-table tr:hover td.sticky-col{background:var(--lm-blue-pale)}
+.td-ytd{background:#EBF4FF!important;font-weight:800;color:var(--lm-blue-dark)}
+.td-l1m{background:#FFF8E1!important;font-weight:700}
+.td-l3m{background:#E8F5E9!important;font-weight:700}
+.td-vs{font-weight:700}
+.td-vs-p{color:#16A34A}
+.td-vs-n{color:#DC2626}
+.row-all{color:#0D2137}
+.row-cb{color:#00AEEF;font-weight:700}
+.row-lm{color:#2E7D32;font-weight:600}
+.row-aq{color:#EF5350;font-weight:600}
+.row-ot{color:#F59E0B;font-weight:600}
+.section-row-header{background:#F0F9FF!important;font-weight:800;font-size:11px;color:#003F8A}
+.chart-toggle-group{display:flex;gap:4px}
+.ct-btn{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid var(--border);background:var(--white);color:var(--text-secondary);transition:all .15s}
+.ct-btn.active{background:var(--lm-blue);border-color:var(--lm-blue);color:#fff}
+</style>
+</head>
+<body>
+<nav class="topnav" id="topnav"></nav>
+<div class="page-wrap" style="margin-top:76px">
+
+  <div class="filter-bar">
+    <div class="filter-toggle-group">
+      <button class="filter-toggle active" onclick="setSegmen(this,'ALL')">All Cosmo</button>
+      <button class="filter-toggle" onclick="setSegmen(this,'APT')">Apartemen</button>
+      <button class="filter-toggle" onclick="setSegmen(this,'PERUM')">Residensial</button>
+    </div>
+    <div class="filter-divider"></div>
+    <select class="fselect" id="fRegion" onchange="applyFilters()"><option value="">Semua GRSM</option></select>
+    <select class="fselect" id="fRSM"    onchange="applyFilters()"><option value="">Semua RSM</option></select>
+    <select class="fselect" id="fTL"     onchange="applyFilters()"><option value="">Semua TL</option></select>
+    <select class="fselect" id="fOutlet" onchange="applyFilters()"><option value="">Semua Outlet</option></select>
+    <div class="filter-divider"></div>
+    <div class="filter-toggle-group">
+      <button class="filter-toggle active" id="btnWeek"  onclick="setPeriode(this,'week')">Per Week</button>
+      <button class="filter-toggle"        id="btnMonth" onclick="setPeriode(this,'month')">Per Bulan</button>
+    </div>
+    <button class="btn-reset" onclick="resetFilters()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg> Reset
+    </button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="breakdown-grid" id="summaryCards" style="margin-bottom:20px"></div>
+
+  <!-- Charts Row -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title">AWOP/Month Trend</div>
+        <div class="chart-toggle-group"><button class="ct-btn active" onclick="switchCA('cAWOP','line',this)">Garis</button><button class="ct-btn" onclick="switchCA('cAWOP','bar',this)">Batang</button></div>
+      </div>
+      <div style="position:relative;height:200px"><canvas id="cAWOP"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title">Frekuensi Trx/Month</div>
+        <div class="chart-toggle-group"><button class="ct-btn active" onclick="switchCA('cFreq','line',this)">Garis</button><button class="ct-btn" onclick="switchCA('cFreq','bar',this)">Batang</button></div>
+      </div>
+      <div style="position:relative;height:200px"><canvas id="cFreq"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title">Galon/Trx</div>
+        <div class="chart-toggle-group"><button class="ct-btn active" onclick="switchCA('cGpx','line',this)">Garis</button><button class="ct-btn" onclick="switchCA('cGpx','bar',this)">Batang</button></div>
+      </div>
+      <div style="position:relative;height:200px"><canvas id="cGpx"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Detail Table -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Detail Analisis per Periode</div>
+    </div>
+    <div class="table-wrap" style="overflow-x:auto;max-height:500px;overflow-y:auto">
+      <table class="ca-table" id="caTable">
+        <thead id="caHead"></thead>
+        <tbody id="caBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay"><div class="loader-box"><div class="loader-spinner"></div><div class="loader-text">Memuat data...</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/charts.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+let periodeGroup='week', caCharts={};
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!checkAuth()) return;
+  buildNav('analytics');
+  loadAllData();
+  startAutoRefresh();
+});
+
+function setPeriode(btn,val){
+  periodeGroup=val;
+  document.querySelectorAll('#btnWeek,#btnMonth').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPage();
+}
+
+function renderPage(){
+  const rows=getRows();
+  const data=getCustomerAnalytics(rows,periodeGroup);
+  if(!data.length){
+    document.getElementById('summaryCards').innerHTML='<div style="text-align:center;padding:40px;color:#8AADC4;grid-column:1/-1">Tidak ada data</div>';
+    return;
+  }
+
+  // Summary cards dari data terbaru (YTD)
+  const all=getCustomerAnalytics(rows,periodeGroup);
+  const ytdAll={awop:0,freq:0,gpx:0};
+  if(all.length){
+    const last=all[all.length-1];
+    // YTD = average from all periods
+    const avgOf=key=>Number((all.reduce((s,t)=>s+t.all[key],0)/all.length).toFixed(1));
+    ytdAll.awop=avgOf('awop'); ytdAll.freq=avgOf('freq'); ytdAll.gpx=avgOf('gpx');
+  }
+  const ytdCb=all.length?{awop:Number((all.reduce((s,t)=>s+t.cb.awop,0)/all.length).toFixed(1)),freq:Number((all.reduce((s,t)=>s+t.cb.freq,0)/all.length).toFixed(1)),gpx:Number((all.reduce((s,t)=>s+t.cb.gpx,0)/all.length).toFixed(1))}:{awop:0,freq:0,gpx:0};
+
+  document.getElementById('summaryCards').innerHTML=`
+    <div class="breakdown-card"><div class="bc-label">AWOP All (YTD)</div><div class="bc-val">${ytdAll.awop}</div><div class="bc-sub">galon/bulan/buyer</div></div>
+    <div class="breakdown-card"><div class="bc-label">AWOP Chatbot (YTD)</div><div class="bc-val" style="color:#00AEEF">${ytdCb.awop}</div><div class="bc-sub">galon/bulan/buyer CB</div></div>
+    <div class="breakdown-card"><div class="bc-label">Frekuensi All (YTD)</div><div class="bc-val">${ytdAll.freq}</div><div class="bc-sub">trx/bulan/buyer</div></div>
+    <div class="breakdown-card"><div class="bc-label">Frekuensi Chatbot (YTD)</div><div class="bc-val" style="color:#00AEEF">${ytdCb.freq}</div><div class="bc-sub">trx/bulan/buyer CB</div></div>
+    <div class="breakdown-card"><div class="bc-label">Galon/Trx All (YTD)</div><div class="bc-val">${ytdAll.gpx}</div><div class="bc-sub">galon per transaksi</div></div>
+    <div class="breakdown-card"><div class="bc-label">Galon/Trx Chatbot (YTD)</div><div class="bc-val" style="color:#00AEEF">${ytdCb.gpx}</div><div class="bc-sub">galon/trx CB</div></div>`;
+
+  // Charts
+  const labels=data.map(t=>t.periode);
+  const C={ALL:'#CBD5E1',CB:'#00AEEF',LM:'#2E7D32',AQ:'#EF5350',OT:'#F59E0B'};
+  const base={responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{font:{size:10,family:'Plus Jakarta Sans'},boxWidth:10,boxHeight:10,padding:5}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#8AADC4',maxRotation:30,autoSkip:true,maxTicksLimit:8}},
+      y:{grid:{color:'rgba(0,174,239,0.05)'},ticks:{font:{size:10},color:'#8AADC4'}}}};
+
+  const mkChart=(id,dsets)=>{
+    destroyChart(id);const ctx=document.getElementById(id);if(!ctx)return;
+    caCharts[id]=new Chart(ctx,{type:'line',data:{labels,datasets:dsets},options:base});
+  };
+
+  const ds=(label,data,color,fill=false)=>({label,data,type:'line',borderColor:color,backgroundColor:fill?color+'15':'transparent',borderWidth:2,pointRadius:3,fill,tension:0.4});
+
+  mkChart('cAWOP',[ds('All',data.map(t=>t.all.awop),C.ALL,true),ds('Chatbot',data.map(t=>t.cb.awop),C.CB),ds('LM',data.map(t=>t.lm.awop),C.LM),ds('AQ',data.map(t=>t.aq.awop),C.AQ)]);
+  mkChart('cFreq',[ds('All',data.map(t=>t.all.freq),C.ALL,true),ds('Chatbot',data.map(t=>t.cb.freq),C.CB),ds('LM',data.map(t=>t.lm.freq),C.LM),ds('AQ',data.map(t=>t.aq.freq),C.AQ)]);
+  mkChart('cGpx',[ds('All',data.map(t=>t.all.gpx),C.ALL,true),ds('Chatbot',data.map(t=>t.cb.gpx),C.CB),ds('LM',data.map(t=>t.lm.gpx),C.LM),ds('AQ',data.map(t=>t.aq.gpx),C.AQ)]);
+
+  // Detail table
+  buildDetailTable(data);
+}
+
+function buildDetailTable(data){
+  const periods=data.map(t=>t.periode);
+  const lastIdx=periods.length-1;
+
+  // Compute YTD, L1M, L3M
+  const ytd=(arr,key)=>arr.length?Number((arr.reduce((s,t)=>s+t[key],0)/arr.length).toFixed(1)):0;
+  const l1m=data.length>=1?data[data.length-1]:null;
+  const l3m=data.length>=3?data.slice(-3):data;
+
+  // Headers
+  const thStyle='padding:7px 12px;text-align:center;font-size:9px;font-weight:700;color:var(--lm-blue-dark);white-space:nowrap;border-bottom:2px solid var(--lm-blue-light)';
+  const periodThs=periods.map(p=>`<th style="${thStyle}">${p}</th>`).join('');
+  document.getElementById('caHead').innerHTML=`<tr>
+    <th style="${thStyle};text-align:left;position:sticky;left:0;background:var(--lm-blue-pale);z-index:2;min-width:100px">Metrik</th>
+    ${periodThs}
+    <th style="${thStyle};background:#EBF4FF">YTD</th>
+    <th style="${thStyle};background:#FFF8E1">L1M</th>
+    <th style="${thStyle};background:#E8F5E9">L3M</th>
+    <th style="${thStyle};background:#FFF3F3">VS L1W</th>
+  </tr>`;
+
+  const metrics=[
+    {label:'AWOP/Month',key:'awop',rows:[
+      {label:'All',   cls:'row-all', fn:t=>t.all.awop},
+      {label:'Chatbot',cls:'row-cb',fn:t=>t.cb.awop},
+      {label:'LM',    cls:'row-lm', fn:t=>t.lm.awop},
+      {label:'AQ',    cls:'row-aq', fn:t=>t.aq.awop},
+      {label:'Other', cls:'row-ot', fn:t=>t.ot.awop},
+    ]},
+    {label:'Frekuensi (Trx/Month)',key:'freq',rows:[
+      {label:'All',   cls:'row-all', fn:t=>t.all.freq},
+      {label:'Chatbot',cls:'row-cb',fn:t=>t.cb.freq},
+      {label:'LM',    cls:'row-lm', fn:t=>t.lm.freq},
+      {label:'AQ',    cls:'row-aq', fn:t=>t.aq.freq},
+      {label:'Other', cls:'row-ot', fn:t=>t.ot.freq},
+    ]},
+    {label:'Galon/Trx',key:'gpx',rows:[
+      {label:'All',   cls:'row-all', fn:t=>t.all.gpx},
+      {label:'Chatbot',cls:'row-cb',fn:t=>t.cb.gpx},
+      {label:'LM',    cls:'row-lm', fn:t=>t.lm.gpx},
+      {label:'AQ',    cls:'row-aq', fn:t=>t.aq.gpx},
+      {label:'Other', cls:'row-ot', fn:t=>t.ot.gpx},
+    ]},
+  ];
+
+  const tdBase='padding:7px 12px;text-align:center;border-bottom:1px solid #F0F7FF;';
+  let html='';
+  metrics.forEach(m=>{
+    // Section header row
+    html+=`<tr><td colspan="${periods.length+5}" style="padding:8px 14px;background:#F0F9FF;font-weight:800;font-size:11px;color:#003F8A;position:sticky;left:0">${m.label}</td></tr>`;
+    m.rows.forEach(row=>{
+      const vals=data.map(t=>row.fn(t));
+      const ytdVal=vals.length?Number((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1)):0;
+      const l1mVal=vals.length?vals[vals.length-1]:0;
+      const l3mVal=vals.length>=3?Number((vals.slice(-3).reduce((a,b)=>a+b,0)/3).toFixed(1)):l1mVal;
+      const vsLW=vals.length>=2?Number((vals[vals.length-1]-vals[vals.length-2]).toFixed(1)):0;
+      const vsClass=vsLW>0?'td-vs-p':vsLW<0?'td-vs-n':'';
+      const periodTds=vals.map(v=>`<td style="${tdBase}">${v}</td>`).join('');
+      html+=`<tr>
+        <td style="${tdBase}text-align:left;position:sticky;left:0;background:#fff;z-index:1;font-size:11px" class="${row.cls}">&nbsp;&nbsp;${row.label}</td>
+        ${periodTds}
+        <td style="${tdBase}background:#EBF4FF;font-weight:800;color:#003F8A">${ytdVal}</td>
+        <td style="${tdBase}background:#FFF8E1;font-weight:700">${l1mVal}</td>
+        <td style="${tdBase}background:#E8F5E9;font-weight:700">${l3mVal}</td>
+        <td style="${tdBase}font-weight:700" class="${vsClass}">${vsLW>0?'+':''}${vsLW}</td>
+      </tr>`;
+    });
+  });
+  document.getElementById('caBody').innerHTML=html;
+}
+
+function switchCA(id,type,btn){
+  const ch=caCharts[id]; if(!ch)return;
+  btn.closest('.chart-toggle-group').querySelectorAll('.ct-btn').forEach(b=>b.classList.toggle('active',b===btn));
+  ch.data.datasets.forEach((ds,i)=>{
+    ds.type=type;
+    if(type==='bar'){ds.backgroundColor=ds.borderColor+'90';ds.fill=false;ds.borderRadius=5;ds.pointRadius=0;}
+    else{ds.backgroundColor=i===0?ds.borderColor+'15':'transparent';ds.fill=i===0;ds.pointRadius=3;}
+  });
+  ch.config.type=type==='bar'?'bar':'line';ch.update();
+}
+</script>
+</body>
+</html>

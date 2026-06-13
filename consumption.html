@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Minerale — Consumption</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.venn-wrap{position:relative;width:100%;height:280px;display:flex;align-items:center;justify-content:center}
+.venn-svg{width:100%;max-width:400px;height:280px}
+.venn-circle{opacity:.55;transition:opacity .2s}
+.venn-circle:hover{opacity:.75}
+.venn-label{font-size:11px;font-weight:700;fill:#0D2137;text-anchor:middle}
+.venn-pct{font-size:18px;font-weight:800;fill:#0D2137;text-anchor:middle}
+.venn-sub{font-size:10px;fill:#4A6580;text-anchor:middle}
+.venn-center-pct{font-size:13px;font-weight:800;fill:#0D2137;text-anchor:middle}
+.venn-center-sub{font-size:9px;fill:#4A6580;text-anchor:middle}
+</style>
+</head>
+<body>
+<nav class="topnav" id="topnav"></nav>
+<div class="page-wrap" style="margin-top:76px">
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <div class="filter-toggle-group">
+      <button class="filter-toggle active" onclick="setSegmen(this,'ALL')">All Cosmo</button>
+      <button class="filter-toggle"        onclick="setSegmen(this,'APT')">Apartemen</button>
+      <button class="filter-toggle"        onclick="setSegmen(this,'PERUM')">Perumahan</button>
+    </div>
+    <div class="filter-divider"></div>
+    <select class="fselect" id="fRegion"  onchange="applyFilters()"><option value="">Semua Region</option></select>
+    <select class="fselect" id="fArea"    onchange="applyFilters()"><option value="">Semua Area</option></select>
+    <select class="fselect" id="fOutlet"  onchange="applyFilters()"><option value="">Semua Outlet</option></select>
+    <input type="date" class="finput" id="fDari"   onchange="applyFilters()" placeholder="Mulai Dari">
+    <input type="date" class="finput" id="fSampai" onchange="applyFilters()" placeholder="Sampai">
+    <button class="btn-apply" onclick="applyFilters()">Terapkan</button>
+    <button class="btn-reset" onclick="resetFilters()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg> Reset
+    </button>
+  </div>
+
+  <!-- DUAL PANEL -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+    <!-- Comparison Dashboard -->
+    <div>
+      <div style="font-size:13px;font-weight:800;color:var(--lm-blue);margin-bottom:12px">Comparison Dashboard</div>
+
+      <!-- Venn Diagram -->
+      <div class="chart-card" style="margin-bottom:14px">
+        <div class="chart-header"><div class="chart-title">Consumption Pattern (All)</div></div>
+        <div class="venn-wrap">
+          <svg class="venn-svg" viewBox="0 0 400 260" id="vennComp"></svg>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text-secondary)">Detail Performa</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Metric</th>
+              <th class="center">All Cust</th>
+              <th class="center">Sell MS%</th>
+              <th class="center">Galon</th>
+              <th class="center" style="color:var(--lm-blue)">WA Cust</th>
+              <th class="center" style="color:var(--lm-blue)">WA MS%</th>
+              <th class="center" style="color:var(--lm-blue)">WA Galon</th>
+              <th class="center" style="color:var(--red)">Direct Cust</th>
+              <th class="center" style="color:var(--red)">Direct MS%</th>
+              <th class="center" style="color:var(--red)">Direct Galon</th>
+            </tr></thead>
+            <tbody id="tbComp"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div>
+      <div style="font-size:13px;font-weight:800;color:var(--lm-green);margin-bottom:12px">Main Dashboard</div>
+
+      <!-- Venn Diagram -->
+      <div class="chart-card" style="margin-bottom:14px">
+        <div class="chart-header"><div class="chart-title">Consumption Pattern (Chatbot)</div></div>
+        <div class="venn-wrap">
+          <svg class="venn-svg" viewBox="0 0 400 260" id="vennMain"></svg>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text-secondary)">Detail Performa</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Metric</th>
+              <th class="center">All Cust</th>
+              <th class="center">Sell MS%</th>
+              <th class="center">Galon</th>
+              <th class="center" style="color:var(--lm-blue)">WA Cust</th>
+              <th class="center" style="color:var(--lm-blue)">WA MS%</th>
+              <th class="center" style="color:var(--lm-blue)">WA Galon</th>
+              <th class="center" style="color:var(--red)">Direct Cust</th>
+              <th class="center" style="color:var(--red)">Direct MS%</th>
+              <th class="center" style="color:var(--red)">Direct Galon</th>
+            </tr></thead>
+            <tbody id="tbMain"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay"><div class="loader-box"><div class="loader-spinner"></div><div class="loader-text">Memuat data...</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!checkAuth()) return;
+  buildNav('consumption');
+  loadAllData();
+  startAutoRefresh();
+});
+
+function renderPage() {
+  const rows = getRows();
+  const cats = getConsumption(rows);
+  renderVenn('vennComp', cats, false); // All
+  renderVenn('vennMain', cats, true);  // Chatbot only
+  renderTable('tbComp', cats, false);
+  renderTable('tbMain', cats, true);
+}
+
+// ===== VENN DIAGRAM (3 lingkaran bersentuhan) =====
+function renderVenn(svgId, cats, cbOnly) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+
+  // Hitung data
+  const total = cats.reduce((s,c)=>s+(cbOnly?c.waCust:c.all),0)||1;
+
+  const solLM  = cats.find(c=>c.name==='Solus LM');
+  const solAQ  = cats.find(c=>c.name==='Solus AQ');
+  const solOT  = cats.find(c=>c.name==='Solus OT');
+  const duaLMAQ= cats.find(c=>c.name==='Dualis LM & AQ');
+  const duaLMOT= cats.find(c=>c.name==='Dualis LM & OT');
+  const duaAQOT= cats.find(c=>c.name==='Dualis AQ & OT');
+  const triple = cats.find(c=>c.name==='Triple (LM,AQ,OT)');
+
+  const v = c => c ? (cbOnly ? c.waCust : c.all) : 0;
+  const p = c => total ? Math.round(v(c)/total*100) : 0;
+
+  // Total per brand area (Solus + Dualis + Triple)
+  const lmTotal = v(solLM) + v(duaLMAQ) + v(duaLMOT) + v(triple);
+  const aqTotal = v(solAQ) + v(duaLMAQ) + v(duaAQOT) + v(triple);
+  const otTotal = v(solOT) + v(duaLMOT) + v(duaAQOT) + v(triple);
+
+  const lmPct = total ? Math.round(lmTotal/total*100) : 0;
+  const aqPct = total ? Math.round(aqTotal/total*100) : 0;
+  const otPct = total ? Math.round(otTotal/total*100) : 0;
+  const triplePct = p(triple);
+
+  // 3 lingkaran bersentuhan: LM (biru) kiri, AQ (merah) kanan, OT (kuning) bawah tengah
+  const cx1=140, cy1=120, r1=100; // LM
+  const cx2=260, cy2=120, r2=100; // AQ
+  const cx3=200, cy3=195, r3=100; // OT
+
+  svg.innerHTML = `
+    <!-- LM circle -->
+    <circle class="venn-circle" cx="${cx1}" cy="${cy1}" r="${r1}" fill="#00AEEF"/>
+    <!-- AQ circle -->
+    <circle class="venn-circle" cx="${cx2}" cy="${cy2}" r="${r2}" fill="#EF5350"/>
+    <!-- OT circle -->
+    <circle class="venn-circle" cx="${cx3}" cy="${cy3}" r="${r3}" fill="#F59E0B"/>
+
+    <!-- Solus LM label (kiri atas) -->
+    <text class="venn-pct" x="105" y="90">${lmPct}%</text>
+    <text class="venn-label" x="105" y="105">LM</text>
+    <text class="venn-sub" x="105" y="118">${n(lmTotal)}</text>
+
+    <!-- Solus AQ label (kanan atas) -->
+    <text class="venn-pct" x="295" y="90">${aqPct}%</text>
+    <text class="venn-label" x="295" y="105">AQ</text>
+    <text class="venn-sub" x="295" y="118">${n(aqTotal)}</text>
+
+    <!-- Solus OT label (bawah) -->
+    <text class="venn-pct" x="200" y="230">${otPct}%</text>
+    <text class="venn-label" x="200" y="244">Other</text>
+    <text class="venn-sub" x="200" y="255">${n(otTotal)}</text>
+
+    <!-- LM & AQ intersection (atas tengah) -->
+    <text class="venn-center-pct" x="200" y="105">${p(duaLMAQ)}%</text>
+    <text class="venn-center-sub" x="200" y="117">LM+AQ</text>
+    <text class="venn-center-sub" x="200" y="127">${n(v(duaLMAQ))}</text>
+
+    <!-- LM & OT intersection (kiri bawah) -->
+    <text class="venn-center-pct" x="152" y="168">${p(duaLMOT)}%</text>
+    <text class="venn-center-sub" x="152" y="178">LM+OT</text>
+
+    <!-- AQ & OT intersection (kanan bawah) -->
+    <text class="venn-center-pct" x="248" y="168">${p(duaAQOT)}%</text>
+    <text class="venn-center-sub" x="248" y="178">AQ+OT</text>
+
+    <!-- Triple center -->
+    <text class="venn-center-pct" x="200" y="148">${triplePct}%</text>
+    <text class="venn-center-sub" x="200" y="158">All 3</text>
+  `;
+}
+
+// ===== TABLE =====
+function renderTable(tbId, cats, cbOnly) {
+  const tbody = document.getElementById(tbId);
+  const totalAll = cats.reduce((s,c)=>s+c.all,0)||1;
+  const totalWa  = cats.reduce((s,c)=>s+c.waCust,0)||1;
+  const totalGalon = cats.reduce((s,c)=>s+(cbOnly?c.waGalon:c.galon),0)||1;
+
+  const totRow = cats.reduce((acc,c)=>({
+    all:acc.all+c.all, wa:acc.wa+c.waCust,
+    galon:acc.galon+c.galon, waGalon:acc.waGalon+c.waGalon,
+  }),{all:0,wa:0,galon:0,waGalon:0});
+
+  const catColors = {
+    'Solus LM':'#00AEEF','Solus AQ':'#EF5350','Solus OT':'#F59E0B',
+    'Dualis LM & AQ':'#7C3AED','Dualis LM & OT':'#0891B2',
+    'Dualis AQ & OT':'#EA580C','Triple (LM,AQ,OT)':'#2E7D32',
+  };
+
+  const fmt = v => Number(v||0).toLocaleString('id-ID');
+  const pct = (a,b) => b ? (a/b*100).toFixed(1)+'%' : '0.0%';
+
+  tbody.innerHTML = `
+    <tr style="font-weight:800;background:var(--lm-blue-pale)">
+      <td><span class="chip blue">TOTAL</span></td>
+      <td class="center">${fmt(totRow.all)}</td>
+      <td class="center">100%</td>
+      <td class="center">${fmt(totRow.galon)}</td>
+      <td class="center" style="color:var(--lm-blue);font-weight:700">${fmt(totRow.wa)}</td>
+      <td class="center" style="color:var(--lm-blue)">${pct(totRow.wa,totRow.all)}</td>
+      <td class="center" style="color:var(--lm-blue)">${fmt(totRow.waGalon)}</td>
+      <td class="center" style="color:var(--red)">${fmt(totRow.all-totRow.wa)}</td>
+      <td class="center" style="color:var(--red)">${pct(totRow.all-totRow.wa,totRow.all)}</td>
+      <td class="center" style="color:var(--red)">${fmt(totRow.galon-totRow.waGalon)}</td>
+    </tr>` +
+    cats.map(c => {
+      const direct = c.all - c.waCust;
+      const directGalon = c.galon - c.waGalon;
+      const col = catColors[c.name]||'#8AADC4';
+      return `<tr>
+        <td style="display:flex;align-items:center;gap:6px;min-width:140px">
+          <span style="width:10px;height:10px;border-radius:2px;background:${col};flex-shrink:0"></span>
+          <span style="font-size:11px;font-weight:600">${c.name}</span>
+        </td>
+        <td class="center">${fmt(c.all)}</td>
+        <td class="center ${heatClass(Math.round(parseFloat(c.msPct)))}">${c.msPct}%</td>
+        <td class="center">${fmt(c.galon)}</td>
+        <td class="center" style="color:var(--lm-blue);font-weight:600">${fmt(c.waCust)}</td>
+        <td class="center" style="color:var(--lm-blue)">${c.waMsPct}%</td>
+        <td class="center" style="color:var(--lm-blue);font-weight:600">${fmt(c.waGalon)}</td>
+        <td class="center" style="color:var(--red)">${fmt(direct)}</td>
+        <td class="center" style="color:var(--red)">${c.all?(direct/c.all*100).toFixed(1):'0.0'}%</td>
+        <td class="center" style="color:var(--red)">${fmt(directGalon)}</td>
+      </tr>`;
+    }).join('');
+}
+
+function setSegmen(btn, val) {
+  document.querySelectorAll('.filter-toggle').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  let el=document.getElementById('fSegmen');
+  if (!el){el=document.createElement('input');el.type='hidden';el.id='fSegmen';document.body.appendChild(el);}
+  el.value=val==='ALL'?'':val;
+  applyFilters();
+}
+</script>
+</body>
+</html>

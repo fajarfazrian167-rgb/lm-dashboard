@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panduan Lengkap Dashboard Le Minerale</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#F0F7FF;color:#0D2137}
+.sidebar{position:fixed;left:0;top:0;width:270px;height:100vh;background:#0A1628;overflow-y:auto;z-index:100;padding-bottom:40px}
+.sb-logo{padding:20px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:8px}
+.sb-logo h1{color:#00AEEF;font-size:14px;font-weight:800;margin-bottom:2px}
+.sb-logo p{color:rgba(255,255,255,.4);font-size:11px}
+.sb-sec{padding:8px 16px 4px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-top:12px}
+.sb-link{display:block;padding:7px 16px;color:rgba(255,255,255,.65);text-decoration:none;font-size:12px;font-weight:500;border-radius:6px;margin:1px 8px;transition:all .15s}
+.sb-link:hover,.sb-link.active{background:#00AEEF;color:#fff}
+.main{margin-left:270px;padding:32px 40px;max-width:1200px}
+h1.page-title{font-size:26px;font-weight:800;color:#0D2137;margin-bottom:6px;letter-spacing:-.5px}
+.page-sub{font-size:13px;color:#8AADC4;margin-bottom:32px}
+h2{font-size:18px;font-weight:800;color:#0D2137;margin:40px 0 16px;padding-bottom:8px;border-bottom:3px solid #00AEEF}
+h3{font-size:14px;font-weight:700;color:#003F8A;margin:24px 0 10px;display:flex;align-items:center;gap:8px}
+h3::before{content:'';display:inline-block;width:4px;height:16px;background:#00AEEF;border-radius:2px;flex-shrink:0}
+p{font-size:13px;color:#4A6580;line-height:1.7;margin-bottom:10px}
+
+/* FORMULA BOX */
+.formula{background:#0D1B2A;border-radius:10px;padding:14px 18px;margin:10px 0;font-family:'Courier New',monospace;font-size:13px;color:#E8F4FF;line-height:1.8;overflow-x:auto}
+.formula .f-result{color:#00AEEF;font-weight:700}
+.formula .f-comment{color:#4A6580;font-style:italic}
+.formula .f-col{color:#F59E0B;font-weight:600}
+.formula .f-val{color:#2E7D32;font-weight:600}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+.tbl th{background:#EBF4FF;padding:9px 12px;text-align:left;font-weight:700;color:#003F8A;border-bottom:2px solid #00AEEF;white-space:nowrap}
+.tbl td{padding:9px 12px;border-bottom:1px solid #E8F4FF;color:#4A6580;vertical-align:top}
+.tbl td:first-child{font-weight:600;color:#0D2137;white-space:nowrap}
+.tbl tr:hover td{background:#F5FBFF}
+
+/* CARDS */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:14px 0}
+.card{background:#fff;border:1px solid #DCE8F5;border-radius:12px;padding:16px}
+.card h4{font-size:12px;font-weight:800;color:#003F8A;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em}
+.card-item{display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;border-bottom:1px solid #F0F7FF;gap:10px}
+.card-item:last-child{border:none}
+.card-item span:first-child{font-size:12px;color:#4A6580;flex:1}
+.card-item span:last-child{font-size:11px;font-family:monospace;background:#F0F7FF;padding:2px 7px;border-radius:4px;color:#0D2137;font-weight:600;flex-shrink:0;text-align:right}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700}
+.badge-blue{background:#DBEAFE;color:#1e40af}
+.badge-green{background:#DCFCE7;color:#166534}
+.badge-red{background:#FEE2E2;color:#DC2626}
+.badge-yellow{background:#FEF9C3;color:#854D0E}
+.badge-purple{background:#EDE9FE;color:#5B21B6}
+
+/* INFO BOXES */
+.info{background:#EBF4FF;border-left:4px solid #00AEEF;border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px;color:#4A6580}
+.warn{background:#FFF8E1;border-left:4px solid #F59E0B;border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px;color:#4A6580}
+.success{background:#ECFDF5;border-left:4px solid #2E7D32;border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px;color:#4A6580}
+.info strong,.warn strong,.success strong{font-weight:700;display:block;margin-bottom:4px}
+
+/* COL MAPPING */
+.col-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F0F7FF}
+.col-tag{width:46px;text-align:center;background:#EBF4FF;color:#00AEEF;font-size:11px;font-weight:700;border-radius:4px;padding:2px 4px;font-family:monospace;flex-shrink:0}
+.col-name{font-size:12px;font-weight:600;color:#0D2137;width:160px;flex-shrink:0}
+.col-desc{font-size:12px;color:#4A6580;flex:1}
+.col-key{background:#DCFCE7;color:#166534;font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;flex-shrink:0}
+
+/* STEP */
+.step{display:flex;gap:12px;margin:10px 0;align-items:flex-start}
+.step-n{width:26px;height:26px;border-radius:50%;background:#00AEEF;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-body{flex:1;font-size:13px;color:#4A6580;line-height:1.6}
+.step-body strong{display:block;color:#0D2137;font-weight:700;margin-bottom:2px}
+
+/* METRIC SECTION */
+.metric-section{background:#fff;border:1px solid #DCE8F5;border-radius:12px;padding:18px;margin:14px 0}
+.metric-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #EBF4FF}
+.metric-icon{font-size:22px}
+.metric-title{font-size:15px;font-weight:800;color:#0D2137}
+.metric-page{font-size:11px;color:#8AADC4;font-weight:500}
+
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0;padding:20px}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sb-logo">
+    <h1>📋 Panduan Lengkap</h1>
+    <p>Le Minerale Cosmo Residensial v10</p>
+  </div>
+  <div class="sb-sec">Struktur Data</div>
+  <a href="#spreadsheet" class="sb-link">📊 Spreadsheet & Kolom</a>
+  <a href="#filter" class="sb-link">🔍 Filter & Segmen</a>
+  <a href="#definisi" class="sb-link">📖 Definisi Dasar</a>
+
+  <div class="sb-sec">Metrik per Halaman</div>
+  <a href="#summary" class="sb-link">📊 Summary</a>
+  <a href="#store" class="sb-link">🏪 Store</a>
+  <a href="#mdtl" class="sb-link">👥 MD & TL</a>
+  <a href="#consumption" class="sb-link">🧩 Consumption</a>
+  <a href="#trend" class="sb-link">📈 Trend</a>
+  <a href="#analytics" class="sb-link">🎯 Customer Analytics</a>
+
+  <div class="sb-sec">Rumus Lengkap</div>
+  <a href="#bobot" class="sb-link">⚖️ Bobot Nilai</a>
+  <a href="#ms" class="sb-link">📐 Market Share</a>
+  <a href="#usership" class="sb-link">🤖 Chatbot Usership</a>
+  <a href="#awop" class="sb-link">📦 AWOP & Frekuensi</a>
+
+  <div class="sb-sec">Teknis</div>
+  <a href="#cache" class="sb-link">⚡ Sistem Cache</a>
+  <a href="#edit" class="sb-link">✏️ Cara Edit Kode</a>
+  <a href="#user" class="sb-link">👤 User & Login</a>
+  <a href="#deploy" class="sb-link">🚀 Deploy</a>
+</nav>
+
+<div class="main">
+<h1 class="page-title">Panduan Lengkap Dashboard Le Minerale</h1>
+<p class="page-sub">Cosmo Residensial — Semua metrik, rumus, sumber data, dan cara kerja sistem dari A sampai Z</p>
+
+<!-- ======================== SPREADSHEET ======================== -->
+<h2 id="spreadsheet">📊 Struktur Spreadsheet & Mapping Kolom</h2>
+
+<div class="info"><strong>Spreadsheet ID</strong>1m8-FwDgqfR2QWvrTC1opzIKstfrV-5WNkgDtUyEWchs<br>Sheet Perumahan: <code>MASTER DATA</code> | Sheet Apartemen: <code>MASTER DATA EKMA</code> (diaktifkan nanti)</div>
+
+<p>Setiap baris di spreadsheet = 1 transaksi. Dashboard membaca semua baris, lalu mengelompokkan dan menghitung metrik dari kolom-kolom ini:</p>
+
+<div style="background:#fff;border:1px solid #DCE8F5;border-radius:12px;padding:16px;margin:14px 0">
+  <div class="col-row" style="border-bottom:2px solid #00AEEF;margin-bottom:4px"><div class="col-tag" style="background:#00AEEF;color:#fff">Kolom</div><div class="col-name" style="font-size:11px;font-weight:800;color:#003F8A">Nama Header</div><div class="col-desc" style="font-size:11px;font-weight:800;color:#003F8A">Fungsi di Dashboard</div><div class="col-key" style="background:#003F8A;color:#fff">Kunci</div></div>
+
+  <div class="col-row"><div class="col-tag">A (0)</div><div class="col-name">Region</div><div class="col-desc">Filter GRSM (GR3A, GR3B, GR3C)</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">B (1)</div><div class="col-name">Area</div><div class="col-desc">Filter Area (Jakarta Barat, Tangerang, dst)</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">C (2)</div><div class="col-name">Outlet</div><div class="col-desc">Nama toko — <strong>unik per toko</strong>, dihitung untuk total outlet</div><div class="col-key">Outlet ID</div></div>
+  <div class="col-row"><div class="col-tag">F (5)</div><div class="col-name">Coverage</div><div class="col-desc">Detail coverage / area toko</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">I (8)</div><div class="col-name">Customer Name</div><div class="col-desc">Nama customer (backup jika AG kosong)</div><div class="col-key"></div></div>
+  <div class="col-row" style="background:#FFF8E1"><div class="col-tag">K (10)</div><div class="col-name">Status</div><div class="col-desc"><strong>CHATBOT vs MANUAL</strong> — nilai: NEW REG, REPEAT, MANUAL</div><div class="col-key">⭐ Kunci Chatbot</div></div>
+  <div class="col-row" style="background:#FFF8E1"><div class="col-tag">N (13)</div><div class="col-name">Product</div><div class="col-desc"><strong>Brand</strong> — nilai: LE MINERALE, AQUA, atau lainnya (=Other)</div><div class="col-key">⭐ Kunci Brand</div></div>
+  <div class="col-row" style="background:#EBF4FF"><div class="col-tag">P (15)</div><div class="col-name">Qty</div><div class="col-desc"><strong>Jumlah galon</strong> — dipakai untuk semua perhitungan galon/unit</div><div class="col-key">⭐ Kunci Qty</div></div>
+  <div class="col-row"><div class="col-tag">Q (16)</div><div class="col-name">Value</div><div class="col-desc">Nilai transaksi dalam Rupiah</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">W (22)</div><div class="col-name">MPP</div><div class="col-desc">Nama MD (Merchandiser/Mystery Shopper)</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">Y (24)</div><div class="col-name">TL</div><div class="col-desc">Nama Team Leader</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">AA (26)</div><div class="col-name">RSM</div><div class="col-desc">Nama RSM (Regional Sales Manager)</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">AB (27)</div><div class="col-name">Timestamp</div><div class="col-desc">Tanggal & waktu transaksi — untuk Time Gone dan urutan</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">AC (28)</div><div class="col-name">Periode</div><div class="col-desc">Periode mingguan: WEEK 8, WEEK 9, dst — untuk Trend per Week</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">AD (29)</div><div class="col-name">Month</div><div class="col-desc">Bulan: JAN, FEB, MAR, dst — untuk Trend per Bulan</div><div class="col-key"></div></div>
+  <div class="col-row"><div class="col-tag">AE (30)</div><div class="col-name">Year</div><div class="col-desc">Tahun: 2026</div><div class="col-key"></div></div>
+  <div class="col-row" style="background:#FFF8E1"><div class="col-tag">AF (31)</div><div class="col-name">Project</div><div class="col-desc"><strong>Segmen</strong>: berisi kata "RESIDENSIAL" atau "APARTEMEN" — untuk filter All/Apt/Perum</div><div class="col-key">⭐ Kunci Segmen</div></div>
+  <div class="col-row" style="background:#ECFDF5"><div class="col-tag">AG (32)</div><div class="col-name">Key_Sub</div><div class="col-desc"><strong>ID UNIK PELANGGAN</strong> — semua perhitungan jumlah buyer dari kolom ini</div><div class="col-key">⭐⭐ Kunci Buyer</div></div>
+  <div class="col-row"><div class="col-tag">AH (33)</div><div class="col-name">Program</div><div class="col-desc">Tipe program: PERDANA 3+1, PERDANA DISC 5K, dst</div><div class="col-key"></div></div>
+  <div class="col-row" style="background:#FFF8E1"><div class="col-tag">AI (34)</div><div class="col-name">Status Store</div><div class="col-desc"><strong>Status toko</strong>: AKTIF = Continue, PASIF = Discontinue</div><div class="col-key">⭐ Kunci Outlet</div></div>
+</div>
+
+<!-- ======================== FILTER ======================== -->
+<h2 id="filter">🔍 Filter & Segmen</h2>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>🔵 Filter Segmen (Tombol Tab)</h4>
+    <div class="card-item"><span>All Cosmo</span><span>Perum + Apartemen digabung</span></div>
+    <div class="card-item"><span>Apartemen</span><span>Kolom AF = "APARTEMEN"</span></div>
+    <div class="card-item"><span>Residensial</span><span>Kolom AF = "RESIDENSIAL"</span></div>
+  </div>
+  <div class="card">
+    <h4>🔍 Filter Dropdown</h4>
+    <div class="card-item"><span>Semua GRSM</span><span>Kolom A (Region)</span></div>
+    <div class="card-item"><span>Semua RSM</span><span>Kolom AA (RSM)</span></div>
+    <div class="card-item"><span>Semua Area</span><span>Kolom B (Area)</span></div>
+    <div class="card-item"><span>Semua TL</span><span>Kolom Y (TL)</span></div>
+    <div class="card-item"><span>Semua Periode</span><span>Kolom AC (Periode)</span></div>
+    <div class="card-item"><span>Semua Outlet</span><span>Kolom C (Outlet)</span></div>
+  </div>
+</div>
+
+<div class="warn"><strong>⚠️ Penting tentang Filter</strong>Saat klik "Apartemen" → sistem hanya ambil baris dari sheet MASTER DATA EKMA. Saat "Residensial" → hanya dari sheet MASTER DATA. Saat "All" → gabungan keduanya. Filter dropdown bekerja DI ATAS hasil segmen.</div>
+
+<!-- ======================== DEFINISI ======================== -->
+<h2 id="definisi">📖 Definisi Dasar</h2>
+
+<table class="tbl">
+  <tr><th>Istilah</th><th>Definisi</th><th>Sumber Kolom</th><th>Nilai di Spreadsheet</th></tr>
+  <tr><td>LE MINERALE (LM)</td><td>Transaksi produk Le Minerale</td><td>Kolom N (Product)</td><td>"LE MINERALE" (exact)</td></tr>
+  <tr><td>AQUA (AQ)</td><td>Transaksi produk Aqua</td><td>Kolom N (Product)</td><td>"AQUA" (exact)</td></tr>
+  <tr><td>Other (OT)</td><td>Semua produk selain LM dan AQ</td><td>Kolom N (Product)</td><td>Club, dan lainnya</td></tr>
+  <tr><td>Chatbot</td><td>Transaksi via aplikasi chatbot</td><td>Kolom K (Status)</td><td>"NEW REG" atau "REPEAT"</td></tr>
+  <tr><td>Manual</td><td>Transaksi bukan via chatbot</td><td>Kolom K (Status)</td><td>"MANUAL"</td></tr>
+  <tr><td>NEW REG</td><td>Pendaftaran baru via chatbot</td><td>Kolom K (Status)</td><td>"NEW REG"</td></tr>
+  <tr><td>REPEAT</td><td>Transaksi ulang via chatbot</td><td>Kolom K (Status)</td><td>"REPEAT"</td></tr>
+  <tr><td>Continue</td><td>Toko aktif / masih jalan</td><td>Kolom AI (Status Store)</td><td>"AKTIF"</td></tr>
+  <tr><td>Discontinue</td><td>Toko tidak aktif / berhenti</td><td>Kolom AI (Status Store)</td><td>"PASIF"</td></tr>
+  <tr><td>Unique Buyer</td><td>Pelanggan unik = 1 ID di kolom AG</td><td>Kolom AG (Key_Sub)</td><td>ID unik per pelanggan</td></tr>
+  <tr><td>Transaksi</td><td>1 baris di spreadsheet = 1 transaksi</td><td>Semua kolom</td><td>—</td></tr>
+  <tr><td>Galon / Qty</td><td>Jumlah galon yang terjual</td><td>Kolom P (Qty)</td><td>Angka: 1, 2, 3, dst</td></tr>
+  <tr><td>HK (Hari Kerja)</td><td>Jumlah hari unik ada transaksi</td><td>Kolom AB (Timestamp)</td><td>Dihitung dari tanggal unik</td></tr>
+  <tr><td>Time Gone</td><td>Hari sejak transaksi pertama sampai hari ini</td><td>Kolom AB (Timestamp)</td><td>Hari ini - tanggal pertama</td></tr>
+</table>
+
+<!-- ======================== SUMMARY ======================== -->
+<h2 id="summary">📊 Halaman Summary — Semua Metrik</h2>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">🏬</div><div><div class="metric-title">Performance Summary — Outlet</div><div class="metric-page">Halaman: Summary (index.html)</div></div></div>
+
+  <h3>Total Outlet</h3>
+  <div class="formula">
+<span class="f-comment">// Hitung outlet UNIK dari kolom C</span>
+<span class="f-result">Total Outlet</span> = jumlah nilai unik di <span class="f-col">Kolom C (Outlet)</span>
+<span class="f-comment">// 1 nama toko = 1 outlet, meskipun ada 100 transaksi di toko itu</span>
+
+<span class="f-result">Continue</span>  = outlet dengan <span class="f-col">Kolom AI</span> = <span class="f-val">"AKTIF"</span>
+<span class="f-result">Discontinue</span> = outlet dengan <span class="f-col">Kolom AI</span> = <span class="f-val">"PASIF"</span>
+<span class="f-comment">// Status diambil dari data TERBARU per outlet</span>
+
+<span class="f-result">Outlet Apartemen</span>  = outlet dimana <span class="f-col">Kolom AF</span> mengandung kata <span class="f-val">"APARTEMEN"</span>
+<span class="f-result">Outlet Residensial</span> = outlet dimana <span class="f-col">Kolom AF</span> mengandung kata <span class="f-val">"RESIDENSIAL"</span>
+  </div>
+
+  <h3>Time Gone</h3>
+  <div class="formula">
+<span class="f-result">Time Gone</span> = Hari Ini − Tanggal Transaksi Pertama
+<span class="f-comment">// Tanggal pertama = nilai minimum dari Kolom AB (Timestamp)</span>
+<span class="f-comment">// Contoh: transaksi pertama 3 Maret 2026, hari ini 13 Juni 2026 = 102 hari</span>
+  </div>
+</div>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">🤖</div><div><div class="metric-title">Point Chatbot Performance</div><div class="metric-page">Halaman: Summary</div></div></div>
+
+  <h3>Section Buyers</h3>
+  <div class="formula">
+<span class="f-comment">// Chatbot Buyers = unique AG yang punya transaksi via chatbot</span>
+<span class="f-result">Chatbot Buyers</span> = jumlah unik <span class="f-col">Kolom AG</span> dimana <span class="f-col">Kolom K</span> = <span class="f-val">"NEW REG"</span> atau <span class="f-val">"REPEAT"</span>
+
+<span class="f-result">% LM Chatbot Buyers</span> = (LM Chatbot Buyers ÷ Chatbot Buyers) × 100
+<span class="f-comment">// LM Chatbot Buyers = unique AG yang beli LM via chatbot</span>
+<span class="f-comment">// Ditampilkan: angka Chatbot Buyers + % dari total buyers + % LM dari chatbot</span>
+  </div>
+
+  <h3>Section Transaction</h3>
+  <div class="formula">
+<span class="f-result">Chatbot Trx</span>   = jumlah baris dimana <span class="f-col">Kolom K</span> = <span class="f-val">"NEW REG"</span> atau <span class="f-val">"REPEAT"</span>
+<span class="f-result">% CB dari Total</span>  = (Chatbot Trx ÷ Total Trx) × 100
+<span class="f-result">LM Chatbot Trx</span> = jumlah baris dimana K=chatbot DAN N=LE MINERALE
+<span class="f-result">% LM dari CB Trx</span> = (LM CB Trx ÷ Chatbot Trx) × 100
+  </div>
+
+  <h3>Section Gallon via Chatbot</h3>
+  <div class="formula">
+<span class="f-result">Gallon Sold (Total)</span> = jumlah semua <span class="f-col">Kolom P (Qty)</span>
+<span class="f-result">Gallon via Chatbot</span> = jumlah Kolom P dimana <span class="f-col">Kolom K</span> = chatbot
+<span class="f-result">% CB Galon</span>        = (CB Galon ÷ Total Galon) × 100
+<span class="f-result">LM Galon via CB</span>   = jumlah Kolom P dimana K=chatbot DAN N=LE MINERALE
+<span class="f-result">% LM Galon CB</span>     = (LM CB Galon ÷ CB Galon) × 100
+  </div>
+</div>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">👥</div><div><div class="metric-title">Chatbot Usership</div><div class="metric-page">Halaman: Summary</div></div></div>
+
+  <h3>% Repeat Buyers</h3>
+  <div class="formula">
+<span class="f-result">Repeat Buyers</span> = jumlah unik <span class="f-col">Kolom AG</span> dimana <span class="f-col">Kolom K</span> = <span class="f-val">"REPEAT"</span> (exact)
+<span class="f-result">% Repeat</span>      = (Repeat Buyers ÷ Chatbot Buyers) × 100
+<span class="f-comment">// Bukan NEW REG, harus tepat "REPEAT"</span>
+  </div>
+
+  <h3>Lapsers</h3>
+  <div class="formula">
+<span class="f-comment">// Lapsers = customer yang pernah chatbot tapi terakhir transaksinya MANUAL</span>
+<span class="f-result">Lapsers</span> = dari Chatbot Buyers, filter yang transaksi TERAKHIR-nya = <span class="f-val">"MANUAL"</span>
+<span class="f-comment">// Cara: ambil status transaksi terbaru per AG, kalau MANUAL = lapser</span>
+<span class="f-result">% Lapsers</span> = (Lapsers ÷ Chatbot Buyers) × 100
+  </div>
+
+  <h3>Switching to LM</h3>
+  <div class="formula">
+<span class="f-comment">// Switch = customer yang pernah beli produk LAIN (non-LM) tapi juga pernah beli LM</span>
+<span class="f-result">Switching to LM</span> = unique AG yang punya history LE MINERALE DAN produk lain
+<span class="f-result">% Switch</span>        = (Switching ÷ Total Buyers) × 100
+  </div>
+</div>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">🍩</div><div><div class="metric-title">Total Performance & Chatbot Performance (Donut Chart)</div><div class="metric-page">Halaman: Summary</div></div></div>
+
+  <h3>Unit Share (Total)</h3>
+  <div class="formula">
+<span class="f-result">% LM Unit Share</span> = (Total Galon LM ÷ Total Galon Semua) × 100
+<span class="f-result">% AQ Unit Share</span> = (Total Galon AQ ÷ Total Galon Semua) × 100
+<span class="f-result">% OT Unit Share</span> = (Total Galon Other ÷ Total Galon Semua) × 100
+<span class="f-comment">// Galon = jumlah Kolom P (Qty)</span>
+  </div>
+
+  <h3>Buyers Share (Total)</h3>
+  <div class="formula">
+<span class="f-result">% LM Buyers</span> = (Unique AG beli LM ÷ Total Unique AG) × 100
+<span class="f-result">% AQ Buyers</span> = (Unique AG beli AQ ÷ Total Unique AG) × 100
+<span class="f-result">% OT Buyers</span> = sisanya
+<span class="f-comment">// 1 AG bisa masuk ke LM dan AQ sekaligus jika pernah beli keduanya</span>
+  </div>
+
+  <h3>Transaction Share (Total)</h3>
+  <div class="formula">
+<span class="f-result">% LM Trx</span> = (Jumlah baris N=LM ÷ Total baris) × 100
+<span class="f-result">% AQ Trx</span> = (Jumlah baris N=AQ ÷ Total baris) × 100
+<span class="f-result">% OT Trx</span> = sisanya
+  </div>
+
+  <h3>Chatbot Performance (semua sama tapi difilter K=chatbot)</h3>
+  <div class="formula">
+<span class="f-result">Unit Share (Chatbot)</span>  = dari transaksi chatbot saja
+<span class="f-result">Buyers Share (Chatbot)</span> = unique AG yang pernah chatbot
+<span class="f-result">Trx Share (Chatbot)</span>   = dari transaksi chatbot saja
+  </div>
+</div>
+
+<!-- ======================== STORE ======================== -->
+<h2 id="store">🏪 Halaman Store — Semua Kolom</h2>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">🏪</div><div><div class="metric-title">Tabel Performance Store</div><div class="metric-page">Halaman: store.html — data dari getOutletStats()</div></div></div>
+
+  <table class="tbl">
+    <tr><th>Kolom Tabel</th><th>Rumus / Cara Hitung</th><th>Sumber Data</th></tr>
+    <tr><td>Rank</td><td>Urutan berdasarkan Bobot Nilai (tertinggi = rank 1)</td><td>Dihitung otomatis</td></tr>
+    <tr><td>Nama Toko</td><td>—</td><td>Kolom C (Outlet)</td></tr>
+    <tr><td>TL</td><td>—</td><td>Kolom Y</td></tr>
+    <tr><td>Area</td><td>—</td><td>Kolom B</td></tr>
+    <tr><td>Time Gone</td><td>Hari ini − tanggal transaksi PERTAMA outlet ini</td><td>Kolom AB (Timestamp)</td></tr>
+    <tr><td>% MS Before</td><td>Data diinput manual di halaman "Data MS Before" (admin)</td><td>localStorage browser</td></tr>
+    <tr><td>% MS After</td><td>(Galon LM terjual ÷ Total galon terjual di outlet) × 100</td><td>Kolom P & N</td></tr>
+    <tr><td>% Growth</td><td>MS After − MS Before</td><td>Dihitung dari keduanya</td></tr>
+    <tr><td>KPI</td><td>Growth ÷ 100 (simplified)</td><td>Dihitung otomatis</td></tr>
+    <tr><td>Buyers</td><td>Jumlah unique AG di outlet ini</td><td>Kolom AG</td></tr>
+    <tr><td>Switch LM</td><td>Unique AG yang pernah beli LM + produk lain di outlet ini</td><td>Kolom AG & N</td></tr>
+    <tr><td>CB Buyer</td><td>Unique AG yang pernah transaksi chatbot di outlet ini</td><td>Kolom AG & K</td></tr>
+    <tr><td>Repeat CB</td><td>Unique AG yang kolom K = "REPEAT" di outlet ini</td><td>Kolom AG & K</td></tr>
+    <tr><td>LM CB Buyer</td><td>Unique AG yang beli LM via chatbot di outlet ini</td><td>Kolom AG, K & N</td></tr>
+    <tr><td>Trx</td><td>Total baris transaksi di outlet ini</td><td>Semua baris outlet C</td></tr>
+    <tr><td>CB Trx</td><td>Baris dimana K = chatbot di outlet ini</td><td>Kolom K</td></tr>
+    <tr><td>LM CB Trx</td><td>Baris dimana K=chatbot DAN N=LM di outlet ini</td><td>Kolom K & N</td></tr>
+    <tr><td>Galon Sold</td><td>Jumlah Kolom P (Qty) di outlet ini</td><td>Kolom P</td></tr>
+    <tr><td>Galon CB</td><td>Jumlah Kolom P dimana K=chatbot di outlet ini</td><td>Kolom P & K</td></tr>
+    <tr><td>LM Galon CB</td><td>Jumlah Kolom P dimana K=chatbot DAN N=LM</td><td>Kolom P, K & N</td></tr>
+    <tr><td>Bobot Nilai</td><td>Lihat rumus Bobot di bawah</td><td>Dihitung dari Trx, CB%, CB Buyer%</td></tr>
+    <tr><td>Status</td><td>AKTIF = Continue (hijau), PASIF = Discontinue (merah)</td><td>Kolom AI</td></tr>
+  </table>
+</div>
+
+<!-- ======================== MD TL ======================== -->
+<h2 id="mdtl">👥 Halaman MD & TL</h2>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">👥</div><div><div class="metric-title">Metrik per TL dan per MD</div><div class="metric-page">Halaman: md-tl.html — data dari getTLStats()</div></div></div>
+
+  <p>Semua metrik sama seperti Store, tapi dikelompokkan per TL dan per MD (MPP). TL → klik expand → muncul MD di bawahnya.</p>
+
+  <table class="tbl">
+    <tr><th>Metrik</th><th>Cara Hitung</th></tr>
+    <tr><td>Outlet Count</td><td>Jumlah outlet unik yang ditangani TL/MD ini</td></tr>
+    <tr><td>Buyers</td><td>Unique AG dari semua outlet TL/MD ini</td></tr>
+    <tr><td>CB Buyers</td><td>Unique AG yang chatbot dari semua outlet TL/MD</td></tr>
+    <tr><td>% CB Buyer</td><td>(CB Buyers ÷ All Buyers) × 100</td></tr>
+    <tr><td>LM Buyers</td><td>Unique AG yang beli LM dari semua outlet TL/MD</td></tr>
+    <tr><td>Repeat CB</td><td>Unique AG dengan K="REPEAT" di area TL/MD</td></tr>
+    <tr><td>Total Trx</td><td>Jumlah baris transaksi TL/MD ini</td></tr>
+    <tr><td>CB Trx</td><td>Jumlah baris K=chatbot TL/MD ini</td></tr>
+    <tr><td>% CB Trx</td><td>(CB Trx ÷ Total Trx) × 100</td></tr>
+    <tr><td>LM Trx</td><td>Jumlah baris N=LM TL/MD ini</td></tr>
+    <tr><td>LM CB Trx</td><td>Jumlah baris K=chatbot DAN N=LM TL/MD ini</td></tr>
+    <tr><td>MS After</td><td>(Galon LM ÷ Total Galon) × 100 untuk area TL/MD</td></tr>
+    <tr><td>Bobot Nilai</td><td>Sama dengan Store (lihat rumus Bobot)</td></tr>
+    <tr><td>Trx/Day</td><td>Total Trx ÷ HK (hari kerja = hari unik ada transaksi)</td></tr>
+  </table>
+</div>
+
+<!-- ======================== CONSUMPTION ======================== -->
+<h2 id="consumption">🧩 Halaman Consumption</h2>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">🧩</div><div><div class="metric-title">Pola Konsumsi per Pelanggan</div><div class="metric-page">Halaman: consumption.html — data dari getConsumption()</div></div></div>
+
+  <div class="info"><strong>Dasar Perhitungan</strong>Setiap pelanggan (unique AG) dikategorikan berdasarkan produk apa saja yang pernah dibeli SEPANJANG WAKTU (bukan per transaksi).</div>
+
+  <h3>Kategori Pelanggan</h3>
+  <div class="formula">
+<span class="f-result">Solus LM</span>       = AG hanya pernah beli <span class="f-val">LE MINERALE</span> saja
+<span class="f-result">Solus AQ</span>       = AG hanya pernah beli <span class="f-val">AQUA</span> saja
+<span class="f-result">Solus OT</span>       = AG hanya pernah beli produk <span class="f-val">lain</span> (Club, dst)
+<span class="f-result">Dualis LM & AQ</span> = AG pernah beli LM DAN AQ (tapi bukan Other)
+<span class="f-result">Dualis LM & OT</span> = AG pernah beli LM DAN Other (tapi bukan AQ)
+<span class="f-result">Dualis AQ & OT</span> = AG pernah beli AQ DAN Other (tapi bukan LM)
+<span class="f-result">Triple</span>          = AG pernah beli LM, AQ, DAN Other
+  </div>
+
+  <h3>Kolom di Tabel</h3>
+  <table class="tbl">
+    <tr><th>Kolom</th><th>Cara Hitung</th></tr>
+    <tr><td>All Cust</td><td>Jumlah unique AG di kategori ini</td></tr>
+    <tr><td>% Kategori (Sell MS%)</td><td>(Jumlah AG kategori ÷ Total AG) × 100</td></tr>
+    <tr><td>Galon</td><td>Total galon dibeli oleh AG di kategori ini</td></tr>
+    <tr><td>WA Cust</td><td>Jumlah AG di kategori ini yang pernah transaksi chatbot</td></tr>
+    <tr><td>WA MS%</td><td>(WA Cust ÷ All Cust) × 100</td></tr>
+    <tr><td>WA Galon</td><td>Total galon dibeli via chatbot oleh AG kategori ini</td></tr>
+    <tr><td>% MS LM</td><td>(Galon LM ÷ Total Galon kategori) × 100 = Market Share LM</td></tr>
+    <tr><td>% MS AQ</td><td>(Galon AQ ÷ Total Galon kategori) × 100 = Market Share AQ</td></tr>
+    <tr><td>% Chatbot</td><td>(WA Galon ÷ Total Galon kategori) × 100</td></tr>
+    <tr><td>Direct Cust</td><td>All Cust − WA Cust</td></tr>
+    <tr><td>Direct Galon</td><td>Galon − WA Galon</td></tr>
+  </table>
+
+  <div class="info"><strong>Market Share (MS) = galon brand X ÷ total galon toko</strong><br>Bukan hanya chatbot — ini SEMUA galon yang terjual di toko (LM + AQ + Other). MS After di Store = total galon LM ÷ total galon semua produk.</div>
+</div>
+
+<!-- ======================== TREND ======================== -->
+<h2 id="trend">📈 Halaman Trend</h2>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">📈</div><div><div class="metric-title">6 Panel Trend Analisis</div><div class="metric-page">Halaman: trend.html — data dari getTrendAnalysis()</div></div></div>
+
+  <p>Data dikelompokkan per Week (kolom AC) atau per Bulan (kolom AD). Bisa pilih 5/8/12/Semua periode terakhir.</p>
+
+  <table class="tbl">
+    <tr><th>Panel</th><th>Metrik</th><th>Cara Hitung</th></tr>
+    <tr><td rowspan="3">💧 Unit Share</td><td>% LM Unit</td><td>(Galon LM periode ini ÷ Total Galon) × 100</td></tr>
+    <tr><td>% AQ Unit</td><td>(Galon AQ periode ini ÷ Total Galon) × 100</td></tr>
+    <tr><td>% OT Unit</td><td>Sisanya</td></tr>
+    <tr><td rowspan="3">👥 Buyers</td><td>All Buyers</td><td>Unique AG yang transaksi di periode ini</td></tr>
+    <tr><td>CB Buyers</td><td>Unique AG yang chatbot di periode ini</td></tr>
+    <tr><td>% CB Buyer</td><td>(CB Buyers ÷ All Buyers) × 100</td></tr>
+    <tr><td rowspan="3">🤖 Chatbot Usership</td><td>CB Buyers</td><td>Unique AG chatbot periode ini</td></tr>
+    <tr><td>Repeat Buyers</td><td>Unique AG dengan K="REPEAT" periode ini</td></tr>
+    <tr><td>% Repeat</td><td>(Repeat ÷ CB Buyers) × 100</td></tr>
+    <tr><td rowspan="2">🏆 LM Usership</td><td>CB Buyers</td><td>Total CB buyers periode</td></tr>
+    <tr><td>LM CB Buyers</td><td>Unique AG yang beli LM via chatbot periode ini</td></tr>
+    <tr><td rowspan="3">🔄 Transaction</td><td>All Trx</td><td>Total baris transaksi periode ini</td></tr>
+    <tr><td>CB Trx</td><td>Baris K=chatbot periode ini</td></tr>
+    <tr><td>% CB Trx</td><td>(CB Trx ÷ All Trx) × 100</td></tr>
+    <tr><td rowspan="3">💧 Gallon</td><td>Total Galon</td><td>Jumlah Kolom P periode ini</td></tr>
+    <tr><td>CB Galon</td><td>Kolom P dimana K=chatbot</td></tr>
+    <tr><td>LM CB Galon</td><td>Kolom P dimana K=chatbot DAN N=LM</td></tr>
+  </table>
+</div>
+
+<!-- ======================== ANALYTICS ======================== -->
+<h2 id="analytics">🎯 Halaman Customer Analytics</h2>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">🎯</div><div><div class="metric-title">AWOP / Frekuensi / Galon per Trx</div><div class="metric-page">Halaman: customer-analytics.html — data dari getCustomerAnalytics()</div></div></div>
+
+  <h3>Cara Hitung per Periode</h3>
+  <div class="formula">
+<span class="f-comment">// Untuk setiap periode (week/bulan), dihitung per-buyer dulu, lalu dirata-rata</span>
+
+<span class="f-result">AWOP/Month</span> = Total Galon semua buyer ÷ Jumlah unique buyer
+<span class="f-comment">// "Rata-rata galon yang dibeli per pelanggan dalam periode ini"</span>
+<span class="f-comment">// Contoh: 100 galon dibeli oleh 10 buyer = AWOP 10</span>
+
+<span class="f-result">Frekuensi (Trx/Month)</span> = Total Trx semua buyer ÷ Jumlah unique buyer
+<span class="f-comment">// "Rata-rata berapa kali beli per pelanggan dalam periode ini"</span>
+<span class="f-comment">// Contoh: 20 transaksi oleh 10 buyer = Frekuensi 2.0</span>
+
+<span class="f-result">Galon/Trx</span> = Total Galon ÷ Total Transaksi
+<span class="f-comment">// "Rata-rata berapa galon per sekali transaksi"</span>
+<span class="f-comment">// Contoh: 100 galon dalam 25 transaksi = Galon/Trx 4.0</span>
+  </div>
+
+  <h3>Breakdown per Brand</h3>
+  <table class="tbl">
+    <tr><th>Baris</th><th>Definisi Buyer yang Dihitung</th></tr>
+    <tr><td>All</td><td>Semua unique AG yang transaksi di periode ini (apapun produknya)</td></tr>
+    <tr><td>Chatbot</td><td>Unique AG yang transaksi chatbot (K=NEW REG atau REPEAT)</td></tr>
+    <tr><td>LM</td><td>Unique AG yang beli LE MINERALE di periode ini</td></tr>
+    <tr><td>AQ</td><td>Unique AG yang beli AQUA di periode ini</td></tr>
+    <tr><td>Other</td><td>Unique AG yang beli produk lain (bukan LM & AQ)</td></tr>
+  </table>
+
+  <h3>Kolom YTD, L1M, L3M, VS L1W</h3>
+  <div class="formula">
+<span class="f-result">YTD</span>   = rata-rata AWOP/Freq/GPX dari SEMUA periode yang tampil
+<span class="f-result">L1M</span>   = nilai periode TERAKHIR (periode terbaru)
+<span class="f-result">L3M</span>   = rata-rata dari 3 periode terakhir
+<span class="f-result">VS L1W</span> = nilai periode terakhir − nilai periode sebelumnya
+<span class="f-comment">// positif = naik, negatif = turun vs periode sebelumnya</span>
+  </div>
+</div>
+
+<!-- ======================== BOBOT ======================== -->
+<h2 id="bobot">⚖️ Rumus Bobot Nilai</h2>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">⚖️</div><div><div class="metric-title">Bobot Nilai — Dipakai di Store dan MD&TL</div><div class="metric-page">Berlaku di: store.html, md-tl.html</div></div></div>
+
+  <div class="formula">
+<span class="f-comment">// Bobot = skor gabungan 3 komponen</span>
+<span class="f-comment">// Range: 0 - 100</span>
+
+<span class="f-result">Score A</span> = min(100, (Trx/Day ÷ 10) × 100)
+<span class="f-comment">// Komponen: Total Transaksi per Hari</span>
+<span class="f-comment">// Target: 10 trx/hari = score 100. Lebih dari 10 = tetap 100 (cap)</span>
+<span class="f-comment">// Contoh: 8 trx/hari = score 80; 5 trx/hari = score 50</span>
+
+<span class="f-result">Score B</span> = % Chatbot Trx
+<span class="f-comment">// Komponen: % transaksi via chatbot dari total transaksi</span>
+<span class="f-comment">// Contoh: 65% chatbot = score 65</span>
+
+<span class="f-result">Score C</span> = % CB Buyers
+<span class="f-comment">// Komponen: % buyer yang pernah chatbot dari total buyer</span>
+<span class="f-comment">// Contoh: 70% buyer pernah chatbot = score 70</span>
+
+<span class="f-result">Bobot</span> = (Score A × 0.4) + (Score B × 0.4) + (Score C × 0.2)
+<span class="f-comment">// Bobot = Total Trx 40% + % CB Trx 40% + % CB Buyer 20%</span>
+
+<span class="f-comment">// Contoh kalkulasi:</span>
+<span class="f-comment">// Trx/Day = 8  → Score A = 80</span>
+<span class="f-comment">// CB Trx = 65% → Score B = 65</span>
+<span class="f-comment">// CB Buyer = 70% → Score C = 70</span>
+<span class="f-result">Bobot</span> = (80 × 0.4) + (65 × 0.4) + (70 × 0.2) = 32 + 26 + 14 = <span class="f-val">72</span>
+  </div>
+
+  <div class="warn"><strong>Cara mengubah bobot:</strong> Buka <code>assets/js/data.js</code> → cari <code>scoreA*0.4+scoreB*0.4+scoreC*0.2</code> → ubah angka bobotnya. Total harus = 1.0</div>
+</div>
+
+<!-- ======================== MARKET SHARE ======================== -->
+<h2 id="ms">📐 Market Share (MS)</h2>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">📐</div><div><div class="metric-title">Market Share Before & After</div><div class="metric-page">Berlaku di: store.html, md-tl.html, consumption.html</div></div></div>
+
+  <div class="formula">
+<span class="f-comment">// MS = Market Share = porsi galon Le Minerale dari total galon toko</span>
+
+<span class="f-result">% MS After</span> = (Total Galon LM terjual di outlet ÷ Total Galon SEMUA produk di outlet) × 100
+<span class="f-comment">// Dihitung dari data transaksi spreadsheet secara LIVE/REALTIME</span>
+<span class="f-comment">// Contoh: LM jual 500 galon, total semua produk 1000 galon = MS After 50%</span>
+
+<span class="f-result">% MS Before</span> = Data yang DIINPUT MANUAL oleh admin
+<span class="f-comment">// Dikelola di halaman "Data MS Before" (menu user → Data MS Before)</span>
+<span class="f-comment">// Disimpan di localStorage browser — harus diinput sekali per outlet</span>
+
+<span class="f-result">% Growth</span> = MS After − MS Before
+<span class="f-comment">// positif = toko semakin dominan, negatif = menurun</span>
+
+<span class="f-result">KPI</span> = Growth ÷ 100
+<span class="f-comment">// Simplified KPI score</span>
+  </div>
+
+  <div class="success"><strong>Cara input MS Before:</strong><br>
+1. Login sebagai Admin atau PM<br>
+2. Klik avatar di pojok kanan atas → "Data MS Before"<br>
+3. Klik "Import dari Spreadsheet" → semua outlet muncul otomatis<br>
+4. Klik "Edit" per outlet → isi % MS Before → Simpan</div>
+</div>
+
+<!-- ======================== USERSHIP ======================== -->
+<h2 id="usership">🤖 Chatbot Usership Detail</h2>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>🔄 Repeat Buyers</h4>
+    <p style="font-size:12px;color:#4A6580;margin-bottom:8px">Customer yang sudah pernah order chatbot dan order lagi</p>
+    <div class="formula" style="font-size:11px">Unique AG dimana<br>Kolom K = "REPEAT" (exact)</div>
+  </div>
+  <div class="card">
+    <h4>📉 Lapsers</h4>
+    <p style="font-size:12px;color:#4A6580;margin-bottom:8px">Customer yang pernah chatbot tapi sudah tidak lagi</p>
+    <div class="formula" style="font-size:11px">Dari CB Buyers, filter:<br>Transaksi TERAKHIR K = "MANUAL"</div>
+  </div>
+  <div class="card">
+    <h4>🔀 Switching to LM</h4>
+    <p style="font-size:12px;color:#4A6580;margin-bottom:8px">Customer yang awalnya beli produk lain, sekarang juga beli LM</p>
+    <div class="formula" style="font-size:11px">Unique AG yang punya:<br>History LM DAN History non-LM</div>
+  </div>
+</div>
+
+<!-- ======================== AWOP ======================== -->
+<h2 id="awop">📦 AWOP & Frekuensi Detail</h2>
+
+<table class="tbl">
+  <tr><th>Metrik</th><th>Kepanjangan</th><th>Rumus</th><th>Arti</th></tr>
+  <tr><td>AWOP</td><td>Average Weekly Order per Person</td><td>Total Qty ÷ Jumlah Unique Buyer</td><td>Rata-rata galon yang dibeli per pelanggan</td></tr>
+  <tr><td>Frekuensi</td><td>Frekuensi Transaksi per Bulan</td><td>Total Trx ÷ Jumlah Unique Buyer</td><td>Rata-rata berapa kali beli per pelanggan</td></tr>
+  <tr><td>Galon/Trx</td><td>Galon per Transaksi</td><td>Total Qty ÷ Total Trx</td><td>Rata-rata galon setiap kali transaksi</td></tr>
+  <tr><td>L1W (VS)</td><td>Last 1 Week</td><td>Nilai periode ini − nilai periode sebelumnya</td><td>Perubahan vs minggu/bulan lalu</td></tr>
+  <tr><td>L1M</td><td>Last 1 Month</td><td>Nilai periode terbaru</td><td>Nilai terkini</td></tr>
+  <tr><td>L3M</td><td>Last 3 Months</td><td>Rata-rata 3 periode terakhir</td><td>Tren jangka menengah</td></tr>
+  <tr><td>YTD</td><td>Year to Date</td><td>Rata-rata semua periode yang ditampilkan</td><td>Keseluruhan rata-rata</td></tr>
+</table>
+
+<!-- ======================== CACHE ======================== -->
+<h2 id="cache">⚡ Sistem Cache — Cara Kerja Loading Cepat</h2>
+
+<div class="metric-section">
+  <div class="metric-header"><div class="metric-icon">⚡</div><div><div class="metric-title">Session Storage Cache</div><div class="metric-page">File: assets/js/data.js</div></div></div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>🔄 Alur Loading</h4>
+      <div class="step"><div class="step-n">1</div><div class="step-body"><strong>Buka halaman pertama</strong>Cek apakah ada cache di sessionStorage</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-body"><strong>Cache ada & belum expired</strong>Pakai data dari cache → CEPAT (tidak fetch)</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-body"><strong>Cache tidak ada / expired</strong>Fetch dari Google Sheets → simpan ke cache</div></div>
+      <div class="step"><div class="step-n">4</div><div class="step-body"><strong>Pindah halaman (Store, dll)</strong>Semua halaman pakai cache yang sama → INSTAN</div></div>
+    </div>
+    <div class="card">
+      <h4>⏱️ Cache Settings</h4>
+      <div class="card-item"><span>TTL (masa berlaku)</span><span>5 menit</span></div>
+      <div class="card-item"><span>Storage</span><span>sessionStorage</span></div>
+      <div class="card-item"><span>Auto refresh</span><span>Setiap 5 menit</span></div>
+      <div class="card-item"><span>Manual refresh</span><span>Tombol ↻ di navbar</span></div>
+      <div class="card-item"><span>Reset saat</span><span>Tutup browser/tab</span></div>
+    </div>
+  </div>
+
+  <div class="formula">
+<span class="f-comment">// Cara ubah TTL cache (default 5 menit)</span>
+<span class="f-comment">// Buka: assets/js/data.js — baris pertama</span>
+var LM_CACHE_TTL = <span class="f-val">5 * 60 * 1000</span>; <span class="f-comment">// 5 menit dalam milidetik</span>
+<span class="f-comment">// Ganti 5 dengan angka menit yang diinginkan</span>
+<span class="f-comment">// Contoh 10 menit: 10 * 60 * 1000</span>
+  </div>
+</div>
+
+<!-- ======================== EDIT KODE ======================== -->
+<h2 id="edit">✏️ Cara Edit Kode Dashboard</h2>
+
+<table class="tbl">
+  <tr><th>Mau Ubah Apa</th><th>Buka File</th><th>Cari Teks</th></tr>
+  <tr><td>Spreadsheet ID</td><td>assets/js/config.js</td><td>SPREADSHEET_ID</td></tr>
+  <tr><td>Nama sheet</td><td>assets/js/config.js</td><td>SHEET_NAME</td></tr>
+  <tr><td>Aktifkan sheet Apartemen</td><td>assets/js/config.js</td><td>SHEET_APARTEMEN: ''</td></tr>
+  <tr><td>Interval auto refresh</td><td>assets/js/config.js</td><td>REFRESH_INTERVAL</td></tr>
+  <tr><td>Rumus bobot</td><td>assets/js/data.js</td><td>scoreA*0.4+scoreB*0.4</td></tr>
+  <tr><td>Target trx/hari</td><td>assets/js/data.js</td><td>trxPerDay/10*100</td></tr>
+  <tr><td>TTL cache</td><td>assets/js/data.js</td><td>LM_CACHE_TTL</td></tr>
+  <tr><td>Tambah kolom Store</td><td>store.html</td><td>&lt;th&gt; di thead + &lt;td&gt; di renderStoreTable</td></tr>
+  <tr><td>Tambah panel Trend</td><td>trend.html</td><td>buildSection() dan drawCharts()</td></tr>
+  <tr><td>Warna chart</td><td>assets/js/charts.js</td><td>CLR atau colors array</td></tr>
+  <tr><td>Tema dashboard</td><td>assets/js/nav.js</td><td>function applyTheme()</td></tr>
+  <tr><td>Daftar user login</td><td>assets/js/config.js</td><td>DEFAULT_USERS</td></tr>
+  <tr><td>Data MS Before</td><td>ms-before.html</td><td>Akses via login admin → menu user</td></tr>
+</table>
+
+<!-- ======================== USER ======================== -->
+<h2 id="user">👤 Sistem Login & User</h2>
+
+<table class="tbl">
+  <tr><th>Nama</th><th>Email Login</th><th>Passcode</th><th>Role</th><th>Akses</th></tr>
+  <tr><td>FAJAR FAZRIAN</td><td>fajar.manager@leminerale.co.id</td><td>LM0001</td><td><span class="badge badge-purple">PM</span></td><td>Semua + Data MS Before + Kelola User</td></tr>
+  <tr><td>RAYU FEBRIANI</td><td>rayu.areacordinator@leminerale.co.id</td><td>LM0002</td><td><span class="badge badge-blue">AC</span></td><td>Semua halaman</td></tr>
+  <tr><td>NOVALINE AYU MUTIARA</td><td>novaline.teamleader@leminerale.co.id</td><td>LM0003</td><td><span class="badge badge-green">TL</span></td><td>Semua halaman</td></tr>
+  <tr><td>INDRI ROSMASARI</td><td>indri.teamleader@leminerale.co.id</td><td>LM0004</td><td><span class="badge badge-green">TL</span></td><td>Semua halaman</td></tr>
+  <tr><td>NUR DIAN KAMALIA</td><td>dian.teamleader@leminerale.co.id</td><td>LM0005</td><td><span class="badge badge-green">TL</span></td><td>Semua halaman</td></tr>
+  <tr><td>METTA METIA LAILA</td><td>metta.teamleader@leminerale.co.id</td><td>LM0006</td><td><span class="badge badge-green">TL</span></td><td>Semua halaman</td></tr>
+  <tr><td>RAHMI METIA PUTRI</td><td>rahmi.teamleader@leminerale.co.id</td><td>LM0007</td><td><span class="badge badge-green">TL</span></td><td>Semua halaman</td></tr>
+  <tr><td>DAVID OHE</td><td>david.teamleader@leminerale.co.id</td><td>LM0008</td><td><span class="badge badge-green">TL</span></td><td>Semua halaman</td></tr>
+  <tr><td>HERNY PRIYANTINY</td><td>herny.teamleader@leminerale.co.id</td><td>LM0009</td><td><span class="badge badge-green">TL</span></td><td>Semua halaman</td></tr>
+  <tr><td>KELVIN ANDIKA</td><td>kelvin.marketing@leminerale.co.id</td><td>LM00010</td><td><span class="badge badge-yellow">Client</span></td><td>Lihat saja</td></tr>
+  <tr><td>SALAMAH FAUZIAH</td><td>admin.marketing@leminerale.co.id</td><td>LM00011</td><td><span class="badge badge-red">Admin</span></td><td>Semua + Data MS Before + Kelola User</td></tr>
+</table>
+
+<!-- ======================== DEPLOY ======================== -->
+<h2 id="deploy">🚀 Deploy & Update</h2>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>📤 Update via GitHub Desktop</h4>
+    <div class="step"><div class="step-n">1</div><div class="step-body">Buka folder repo di File Explorer</div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-body">Hapus file lama, paste file baru dari ZIP</div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-body">GitHub Desktop → isi Summary → Commit → Push</div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-body">Tunggu 2 menit → Ctrl+Shift+R di browser</div></div>
+  </div>
+  <div class="card">
+    <h4>✏️ Edit Langsung di GitHub</h4>
+    <div class="step"><div class="step-n">1</div><div class="step-body">Buka github.com → repo lm-dashboard</div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-body">Klik file yang mau diedit → klik ✏️ pensil</div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-body">Edit → Commit changes</div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-body">Website update otomatis dalam 1-2 menit</div></div>
+  </div>
+  <div class="card">
+    <h4>💻 Jalankan Lokal</h4>
+    <div class="step"><div class="step-n">1</div><div class="step-body">Install Python dari python.org</div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-body">Double-click file BUKA-LOKAL.bat</div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-body">Buka browser → http://localhost:8080</div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-body">Atau gunakan VS Code + Live Server extension</div></div>
+  </div>
+</div>
+
+<div class="warn"><strong>⚠️ JANGAN buka file HTML langsung (file://)</strong>Harus pakai web server (Live Server / Python server) agar Google Sheets bisa diakses. Kalau buka langsung dari file explorer → error "Failed to fetch".</div>
+
+<br><br>
+<p style="text-align:center;color:#B8CDE0;font-size:11px;padding:20px 0">Le Minerale Cosmo Residensial Dashboard — Panduan Lengkap v10 | Dibuat otomatis dari source code</p>
+
+</div>
+
+<script>
+// Scroll spy untuk sidebar
+window.addEventListener('scroll', function() {
+  var sections = document.querySelectorAll('h2[id]');
+  var current = '';
+  sections.forEach(function(s) {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  document.querySelectorAll('.sb-link').forEach(function(l) {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+</body>
+</html>

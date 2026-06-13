@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Minerale — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden}
+
+body {
+  background: linear-gradient(135deg,#001F5C 0%,#003F8A 45%,#0066CC 75%,#00AEEF 100%);
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+
+/* ===== ANIMATED BACKGROUND ===== */
+.bg-circles { position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0; }
+.bg-circle {
+  position:absolute; border-radius:50%;
+  background:rgba(255,255,255,0.05);
+  animation:bgFloat linear infinite;
+}
+@keyframes bgFloat {
+  0%{transform:translateY(110vh) scale(0) rotate(0deg);opacity:0}
+  10%{opacity:1}
+  90%{opacity:0.3}
+  100%{transform:translateY(-20vh) scale(1) rotate(360deg);opacity:0}
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main-wrap {
+  position:relative;z-index:2;
+  width:100%;max-width:1100px;
+  display:flex; align-items:center; justify-content:center;
+  gap:60px; padding:20px;
+}
+
+/* ===== LEFT: CHARACTER ===== */
+.char-side {
+  display:flex;flex-direction:column;align-items:center;
+  flex-shrink:0;
+}
+
+.brand-logo { margin-bottom:20px; }
+.brand-logo img { height:60px;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.3));animation:logoBob 2.5s ease-in-out infinite; }
+@keyframes logoBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* Lottie / SVG character area */
+.char-wrap { width:260px;height:280px;position:relative; }
+
+/* Connecting line from character to form */
+.connect-line {
+  width:80px;height:2px;
+  background:linear-gradient(90deg,rgba(255,255,255,0.5),rgba(255,255,255,0));
+  margin:0 -20px;
+  animation:linePulse 2s ease-in-out infinite;
+}
+@keyframes linePulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+
+.char-tagline { text-align:center;color:rgba(255,255,255,0.9);margin-top:16px; }
+.char-tagline h2{font-size:20px;font-weight:800;letter-spacing:-0.3px;margin-bottom:4px}
+.char-tagline p{font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6}
+
+.stats-row{display:flex;gap:12px;margin-top:18px;}
+.stat-pill{
+  background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.2);border-radius:20px;
+  padding:8px 16px;text-align:center;
+}
+.stat-num{font-size:18px;font-weight:800;color:#fff}
+.stat-lbl{font-size:10px;color:rgba(255,255,255,0.6);font-weight:500}
+
+/* ===== RIGHT: FORM ===== */
+.form-side {
+  background:rgba(255,255,255,0.97);
+  backdrop-filter:blur(20px);
+  border-radius:24px;
+  padding:44px 40px;
+  width:400px;
+  box-shadow:0 24px 64px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.3);
+  animation:formSlideIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes formSlideIn{
+  from{opacity:0;transform:translateX(40px) scale(0.95)}
+  to{opacity:1;transform:translateX(0) scale(1)}
+}
+
+.form-hello{font-size:12px;font-weight:700;color:#00AEEF;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.form-title{font-size:26px;font-weight:800;color:#0D2137;letter-spacing:-0.5px;margin-bottom:4px;line-height:1.1}
+.form-sub{font-size:13px;color:#8AADC4;margin-bottom:28px;font-weight:400}
+
+.fg{margin-bottom:18px}
+.fl{display:block;font-size:11px;font-weight:700;color:#4A6580;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+
+.fi-wrap{position:relative}
+.fi-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#B8CDE0;flex-shrink:0}
+.fi-icon svg{width:17px;height:17px}
+.fi{
+  width:100%;padding:13px 14px 13px 42px;
+  border:2px solid #E8F2FB;border-radius:12px;
+  font-size:14px;font-family:inherit;color:#0D2137;
+  background:#F8FBFF;outline:none;
+  transition:all .25s;
+}
+.fi:focus{border-color:#00AEEF;background:#fff;box-shadow:0 0 0 4px rgba(0,174,239,.1)}
+.fi::placeholder{color:#C5D9ED;font-weight:400}
+.pw-eye{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:#B8CDE0;padding:4px;display:flex;
+}
+.pw-eye:hover{color:#00AEEF}
+.pw-eye svg{width:16px;height:16px}
+
+.err{background:#FFF0F0;border:1px solid #FFCDD2;border-radius:10px;padding:10px 14px;font-size:12px;color:#C62828;display:none;align-items:center;gap:8px;margin-bottom:16px}
+.err.show{display:flex}
+
+.btn-login{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,#00AEEF,#0086C3);
+  color:#fff;border:none;border-radius:12px;
+  font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:all .25s;
+  box-shadow:0 6px 20px rgba(0,174,239,.4);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,174,239,.5)}
+.btn-login:active{transform:scale(.98)}
+.btn-login:disabled{opacity:.7;cursor:not-allowed;transform:none}
+
+.spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.form-foot{text-align:center;margin-top:20px;font-size:12px;color:#8AADC4}
+.form-foot strong{color:#00AEEF;font-weight:700}
+
+@media(max-width:820px){
+  .char-side{display:none}
+  .main-wrap{justify-content:center}
+  .form-side{width:100%;max-width:420px}
+}
+</style>
+</head>
+<body>
+
+<!-- BG BUBBLES -->
+<div class="bg-circles" id="bgCircles"></div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- CHARACTER SIDE -->
+  <div class="char-side">
+    <div class="brand-logo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Le_Minerale_logo.svg/320px-Le_Minerale_logo.svg.png"
+           alt="Le Minerale"
+           onerror="this.style.display='none'">
+    </div>
+
+    <!-- SVG Character — lebih detail dan hidup -->
+    <div class="char-wrap">
+      <svg viewBox="0 0 260 280" xmlns="http://www.w3.org/2000/svg" width="260" height="280">
+
+        <!-- Shadow -->
+        <ellipse cx="130" cy="272" rx="55" ry="6" fill="rgba(0,0,0,0.2)">
+          <animate attributeName="rx" values="55;50;55" dur="1s" repeatCount="indefinite"/>
+        </ellipse>
+
+        <!-- KAKI & SEPATU -->
+        <g>
+          <!-- Kaki kiri -->
+          <rect x="108" y="208" width="20" height="50" rx="10" fill="#1A3A6B">
+            <animateTransform attributeName="transform" type="rotate" values="6,118,208;-6,118,208;6,118,208" dur="0.9s" repeatCount="indefinite"/>
+          </rect>
+          <ellipse cx="110" cy="257" rx="15" ry="7" fill="#0D2137">
+            <animateTransform attributeName="transform" type="rotate" values="6,118,208;-6,118,208;6,118,208" dur="0.9s" repeatCount="indefinite"/>
+          </ellipse>
+          <!-- Kaki kanan -->
+          <rect x="132" y="208" width="20" height="50" rx="10" fill="#1A3A6B">
+            <animateTransform attributeName="transform" type="rotate" values="-6,142,208;6,142,208;-6,142,208" dur="0.9s" repeatCount="indefinite"/>
+          </rect>
+          <ellipse cx="150" cy="257" rx="15" ry="7" fill="#0D2137">
+            <animateTransform attributeName="transform" type="rotate" values="-6,142,208;6,142,208;-6,142,208" dur="0.9s" repeatCount="indefinite"/>
+          </ellipse>
+        </g>
+
+        <!-- BADAN GROUP (bounce) -->
+        <g id="bodyGroup">
+          <animateTransform attributeName="transform" type="translate" values="0,0;0,-7;0,0" dur="0.9s" repeatCount="indefinite" additive="sum"/>
+
+          <!-- Badan -->
+          <rect x="98" y="138" width="64" height="76" rx="22" fill="#00AEEF"/>
+          <!-- Highlight badan -->
+          <rect x="106" y="145" width="22" height="50" rx="11" fill="rgba(255,255,255,0.12)"/>
+          <!-- ID Card / Badge -->
+          <rect x="112" y="152" width="36" height="28" rx="7" fill="white"/>
+          <rect x="118" y="158" width="24" height="10" rx="3" fill="#00AEEF"/>
+          <text x="130" y="167" text-anchor="middle" font-size="7" font-weight="800" fill="white">LM</text>
+          <rect x="116" y="171" width="10" height="2" rx="1" fill="#C5D9ED"/>
+          <rect x="128" y="171" width="14" height="2" rx="1" fill="#C5D9ED"/>
+          <rect x="116" y="175" width="18" height="2" rx="1" fill="#C5D9ED"/>
+
+          <!-- TANGAN KIRI (pegang galon) -->
+          <g>
+            <animateTransform attributeName="transform" type="rotate" values="-20,98,148;-8,98,148;-20,98,148" dur="1.2s" repeatCount="indefinite"/>
+            <rect x="68" y="148" width="17" height="46" rx="8.5" fill="#FDDCB5"/>
+            <!-- Tangan detail -->
+            <ellipse cx="76" cy="195" rx="10" ry="8" fill="#FDDCB5"/>
+            <!-- Jari -->
+            <rect x="66" y="190" width="7" height="12" rx="3.5" fill="#FDDCB5"/>
+            <rect x="74" y="188" width="7" height="14" rx="3.5" fill="#FDDCB5"/>
+            <rect x="82" y="190" width="7" height="12" rx="3.5" fill="#FDDCB5"/>
+          </g>
+
+          <!-- GALON LE MINERALE -->
+          <g>
+            <animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="1.2s" repeatCount="indefinite"/>
+            <!-- Body galon -->
+            <rect x="22" y="158" width="48" height="65" rx="14" fill="#D6EEFF" stroke="#00AEEF" stroke-width="2.5"/>
+            <!-- Leher galon -->
+            <rect x="36" y="144" width="20" height="18" rx="6" fill="#00AEEF"/>
+            <!-- Tutup galon -->
+            <rect x="33" y="137" width="26" height="12" rx="6" fill="#0073BF"/>
+            <!-- Air dalam galon -->
+            <rect x="26" y="182" width="40" height="35" rx="10" fill="rgba(0,174,239,0.2)"/>
+            <!-- Wave animation inside gallon -->
+            <clipPath id="gallonClip">
+              <rect x="24" y="160" width="44" height="61" rx="12"/>
+            </clipPath>
+            <g clip-path="url(#gallonClip)">
+              <path d="M22,198 Q34,190 46,198 Q58,206 70,198 L70,230 L22,230 Z" fill="rgba(0,174,239,0.3)">
+                <animateTransform attributeName="transform" type="translate" values="0,0;-10,0;0,0" dur="2s" repeatCount="indefinite"/>
+              </path>
+            </g>
+            <!-- Label putih -->
+            <rect x="26" y="165" width="40" height="28" rx="5" fill="white" opacity="0.95"/>
+            <text x="46" y="175" text-anchor="middle" font-size="5.5" font-weight="800" fill="#00AEEF">Le Minerale</text>
+            <text x="46" y="183" text-anchor="middle" font-size="4" fill="#4A6580">Air Mineral Pegunungan</text>
+            <!-- Shine -->
+            <rect x="28" y="162" width="7" height="26" rx="3.5" fill="white" opacity="0.35"/>
+          </g>
+
+          <!-- TANGAN KANAN -->
+          <g>
+            <animateTransform attributeName="transform" type="rotate" values="15,162,148;25,162,148;15,162,148" dur="1.2s" repeatCount="indefinite"/>
+            <rect x="175" y="148" width="17" height="46" rx="8.5" fill="#FDDCB5"/>
+            <ellipse cx="184" cy="195" rx="10" ry="8" fill="#FDDCB5"/>
+          </g>
+
+          <!-- LEHER -->
+          <rect x="121" y="113" width="18" height="28" rx="9" fill="#FDDCB5"/>
+
+          <!-- KEPALA -->
+          <ellipse cx="130" cy="96" rx="36" ry="35" fill="#FDDCB5"/>
+          <!-- Highlight kepala -->
+          <ellipse cx="118" cy="84" rx="10" ry="7" fill="rgba(255,255,255,0.2)"/>
+
+          <!-- RAMBUT -->
+          <ellipse cx="130" cy="66" rx="36" ry="16" fill="#3D1F00"/>
+          <rect x="94" y="66" width="72" height="22" rx="0" fill="#3D1F00"/>
+          <!-- Detail rambut -->
+          <path d="M94,72 Q130,58 166,72" stroke="#5C3010" stroke-width="3" fill="none"/>
+
+          <!-- TELINGA -->
+          <ellipse cx="94" cy="98" rx="8" ry="10" fill="#FDDCB5"/>
+          <ellipse cx="96" cy="98" rx="5" ry="7" fill="#F0C898"/>
+          <ellipse cx="166" cy="98" rx="8" ry="10" fill="#FDDCB5"/>
+          <ellipse cx="164" cy="98" rx="5" ry="7" fill="#F0C898"/>
+
+          <!-- MATA KIRI -->
+          <ellipse cx="117" cy="97" rx="7" ry="7.5" fill="white"/>
+          <circle cx="118" cy="97" r="4.5" fill="#3D1F00">
+            <animate attributeName="cx" values="117;119;117" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="119.5" cy="95.5" r="1.5" fill="white"/>
+          <!-- Kelopak mata kiri -->
+          <path d="M110,92 Q117,88 124,92" stroke="#3D1F00" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+          <!-- MATA KANAN -->
+          <ellipse cx="143" cy="97" rx="7" ry="7.5" fill="white"/>
+          <circle cx="144" cy="97" r="4.5" fill="#3D1F00">
+            <animate attributeName="cx" values="143;145;143" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="145.5" cy="95.5" r="1.5" fill="white"/>
+          <path d="M136,92 Q143,88 150,92" stroke="#3D1F00" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+          <!-- KEDIP -->
+          <rect x="110" y="92" width="14" height="12" rx="4" fill="#FDDCB5" opacity="0">
+            <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;1;0" dur="4s" repeatCount="indefinite"/>
+          </rect>
+          <rect x="136" y="92" width="14" height="12" rx="4" fill="#FDDCB5" opacity="0">
+            <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;1;0" dur="4s" repeatCount="indefinite"/>
+          </rect>
+
+          <!-- HIDUNG -->
+          <ellipse cx="130" cy="106" rx="3.5" ry="3" fill="#E8A875"/>
+
+          <!-- MULUT / SENYUM -->
+          <path d="M120,114 Q130,122 140,114" stroke="#C87050" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- Gigi -->
+          <path d="M123,114 Q130,120 137,114" fill="white" opacity="0.7"/>
+
+          <!-- PIPI -->
+          <ellipse cx="108" cy="110" rx="9" ry="6" fill="#FFB3A0" opacity="0.45"/>
+          <ellipse cx="152" cy="110" rx="9" ry="6" fill="#FFB3A0" opacity="0.45"/>
+
+          <!-- TANGAN menunjuk ke form (kanan atas) -->
+          <line x1="162" y1="155" x2="195" y2="135" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-dasharray="4,3">
+            <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+          </line>
+          <polygon points="195,128 200,142 188,138" fill="rgba(255,255,255,0.7)">
+            <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/>
+          </polygon>
+
+        </g>
+
+        <!-- Speech bubble -->
+        <g>
+          <animate attributeName="opacity" values="0;1;1;0" dur="4s" repeatCount="indefinite"/>
+          <rect x="155" y="58" width="95" height="36" rx="10" fill="white" opacity="0.95"/>
+          <polygon points="170,94 178,94 174,102" fill="white"/>
+          <text x="202" y="74" text-anchor="middle" font-size="9" font-weight="700" fill="#003F8A">Selamat</text>
+          <text x="202" y="86" text-anchor="middle" font-size="9" font-weight="700" fill="#00AEEF">Datang! 👋</text>
+        </g>
+
+      </svg>
+    </div>
+
+    <div class="char-tagline">
+      <h2>Cosmo Residensial</h2>
+      <p>Dashboard KPI &amp; Chatbot<br>Le Minerale secara Realtime</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-pill"><div class="stat-num">68+</div><div class="stat-lbl">Outlet</div></div>
+      <div class="stat-pill"><div class="stat-num">24/7</div><div class="stat-lbl">Realtime</div></div>
+      <div class="stat-pill"><div class="stat-num">5+</div><div class="stat-lbl">TL</div></div>
+    </div>
+  </div>
+
+  <!-- FORM SIDE -->
+  <div class="form-side">
+    <div class="form-hello">Le Minerale Dashboard</div>
+    <div class="form-title">Masuk ke<br>Akun Anda</div>
+    <div class="form-sub">Gunakan email &amp; passcode yang diberikan</div>
+
+    <div class="err" id="errBox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="errMsg">Email atau passcode salah</span>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Email</label>
+      <div class="fi-wrap">
+        <span class="fi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+        <input type="email" class="fi" id="fEmail" placeholder="nama@leminerale.co.id" autocomplete="email">
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Passcode</label>
+      <div class="fi-wrap">
+        <span class="fi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <input type="password" class="fi" id="fPass" placeholder="Masukkan passcode Anda" autocomplete="current-password">
+        <button class="pw-eye" type="button" onclick="togglePw()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-login" id="btnLogin" onclick="doLogin()">
+      <span id="btnTxt">Masuk ke Dashboard</span>
+      <div class="spin" id="btnSpin"></div>
+    </button>
+
+    <div class="form-foot">Lupa passcode? Hubungi <strong>Admin</strong></div>
+  </div>
+
+</div>
+
+<script src="assets/js/config.js"></script>
+<script>
+// Generate background bubbles
+const bc = document.getElementById('bgCircles');
+for(let i=0;i<18;i++){
+  const d=document.createElement('div');
+  d.className='bg-circle';
+  const sz=10+Math.random()*40;
+  d.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*8}s`;
+  bc.appendChild(d);
+}
+
+function doLogin(){
+  const email=document.getElementById('fEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('fPass').value.trim();
+  const errBox=document.getElementById('errBox');
+  const errMsg=document.getElementById('errMsg');
+  if(!email||!pass){errMsg.textContent='Email dan passcode wajib diisi.';errBox.classList.add('show');return;}
+  document.getElementById('btnTxt').style.display='none';
+  document.getElementById('btnSpin').style.display='block';
+  document.getElementById('btnLogin').disabled=true;
+  setTimeout(()=>{
+    const users=getUsers();
+    const user=users.find(u=>u.username.toLowerCase()===email&&u.password===pass&&u.status==='active');
+    if(!user){
+      errMsg.textContent='Email atau passcode salah, atau akun tidak aktif.';
+      errBox.classList.add('show');
+      document.getElementById('btnTxt').style.display='';
+      document.getElementById('btnSpin').style.display='none';
+      document.getElementById('btnLogin').disabled=false;
+      return;
+    }
+    sessionStorage.setItem('lm_session',JSON.stringify({id:user.id,nama:user.nama,role:user.role,username:user.username,loginAt:new Date().toISOString()}));
+    window.location.href='index.html';
+  },900);
+}
+function togglePw(){const el=document.getElementById('fPass');el.type=el.type==='password'?'text':'password';}
+document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+if(sessionStorage.getItem('lm_session'))window.location.href='index.html';
+</script>
+</body>
+</html>

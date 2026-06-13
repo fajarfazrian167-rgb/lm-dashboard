@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Minerale — Trend Analysis</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.trend-panel{margin-bottom:20px}
+.trend-panel-title{font-size:13px;font-weight:800;color:var(--text-primary);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:2px solid var(--lm-blue-light)}
+.vt-grp{display:flex;gap:4px}
+.vt-btn{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid var(--border);background:var(--white);color:var(--text-secondary);transition:all .15s}
+.vt-btn.active{background:var(--lm-blue);border-color:var(--lm-blue);color:#fff}
+.spark-table{width:100%;border-collapse:collapse;font-size:11px}
+.spark-table th{background:var(--lm-blue-pale);padding:6px 10px;text-align:center;font-weight:700;color:var(--lm-blue-dark);font-size:10px;white-space:nowrap;position:sticky;top:0}
+.spark-table td{padding:6px 10px;text-align:center;border-bottom:1px solid #F0F7FF;white-space:nowrap}
+.spark-table tr:hover td{background:var(--lm-blue-pale)}
+.spark-table .td-lm{color:var(--lm-blue);font-weight:700}
+.spark-table .td-aq{color:var(--red);font-weight:700}
+.spark-table .td-cb{color:var(--lm-blue-dark);font-weight:700}
+.spark-table .td-latest{font-weight:800;background:var(--lm-blue-pale)!important}
+.period-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;background:var(--lm-blue-pale);color:var(--lm-blue-dark);border:1px solid var(--lm-blue-light)}
+.period-pill.latest{background:var(--lm-blue);color:#fff}
+</style>
+</head>
+<body>
+<nav class="topnav" id="topnav"></nav>
+<div class="page-wrap" style="margin-top:76px">
+
+  <div class="filter-bar">
+    <div class="filter-toggle-group">
+      <button class="filter-toggle active" onclick="setSegmen(this,'ALL')">All Cosmo</button>
+      <button class="filter-toggle" onclick="setSegmen(this,'APT')">Apartemen</button>
+      <button class="filter-toggle" onclick="setSegmen(this,'PERUM')">Residensial</button>
+    </div>
+    <div class="filter-divider"></div>
+    <select class="fselect" id="fRegion" onchange="applyFilters()"><option value="">Semua GRSM</option></select>
+    <select class="fselect" id="fRSM"    onchange="applyFilters()"><option value="">Semua RSM</option></select>
+    <div class="filter-divider"></div>
+    <div class="filter-toggle-group">
+      <button class="filter-toggle active" id="btnWeek"  onclick="setPeriode(this,'week')">Per Week</button>
+      <button class="filter-toggle"        id="btnMonth" onclick="setPeriode(this,'month')">Per Bulan</button>
+    </div>
+    <select class="fselect" id="fN" onchange="renderPage()">
+      <option value="5">5 Terakhir</option>
+      <option value="8">8 Periode</option>
+      <option value="12">12 Periode</option>
+      <option value="0">Semua</option>
+    </select>
+    <button class="btn-reset" onclick="resetFilters()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg> Reset
+    </button>
+  </div>
+
+  <div id="trendWrap"></div>
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay"><div class="loader-box"><div class="loader-spinner"></div><div class="loader-text">Memuat data...</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/charts.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+let periodeGroup='week';
+let chartReg={};
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!checkAuth()) return;
+  buildNav('trend');
+  loadAllData();
+  startAutoRefresh();
+});
+
+function setPeriode(btn,val){
+  periodeGroup=val;
+  document.querySelectorAll('#btnWeek,#btnMonth').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPage();
+}
+
+function renderPage(){
+  const rows=getRows();
+  const nLim=Number(document.getElementById('fN')?.value||5);
+  let trend=getTrendAnalysis(rows,periodeGroup);
+  if(nLim>0&&trend.length>nLim) trend=trend.slice(-nLim);
+  if(!trend.length){document.getElementById('trendWrap').innerHTML='<div style="text-align:center;padding:60px;color:var(--text-muted)">Tidak ada data</div>';return;}
+
+  Object.values(chartReg).forEach(c=>{try{c.destroy()}catch(e){}});
+  chartReg={};
+
+  const labels=trend.map(t=>t.periode);
+  const latest=trend.length-1;
+  const pills=labels.map((l,i)=>`<span class="period-pill ${i===latest?'latest':''}">${l}</span>`).join(' ');
+
+  document.getElementById('trendWrap').innerHTML = `
+    <div class="chart-card" style="margin-bottom:16px;padding:12px 18px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;color:var(--text-muted)">PERIODE:</span>
+        ${pills}
+      </div>
+    </div>
+    ${buildSection('cUnit','💧 Unit Share (Qty Galon)',
+      buildTable(trend,latest,['Periode','% LM','% AQ','% Others','Qty LM','Total'],t=>[t.periode,t.pctLmUnit+'%',t.pctAqUnit+'%',t.pctOtUnit+'%',n(t.lmQty),n(t.totalQty)],['','td-lm','td-aq','','td-lm',''])
+    )}
+    ${buildSection('cBuyers','👥 Buyers',
+      buildTable(trend,latest,['Periode','All','Chatbot','% CB','% LM','% AQ'],t=>[t.periode,n(t.allBuyers),n(t.cbBuyers),t.pctCbBuyer+'%',t.pctLmBuyers+'%',t.pctAqBuyers+'%'],['','','td-cb','td-cb','td-lm','td-aq'])
+    )}
+    ${buildSection('cCbUser','🤖 Chatbot Usership',
+      buildTable(trend,latest,['Periode','CB Buyers','Repeat','% Repeat'],t=>[t.periode,n(t.cbBuyers),n(t.repeatBuyers),t.pctRepeat+'%'],['','td-cb','','td-cb'])
+    )}
+    ${buildSection('cLMUser','🏆 LM Usership',
+      buildTable(trend,latest,['Periode','CB Buyers','LM CB Buyers','% LM'],t=>[t.periode,n(t.cbBuyers),n(t.lmCbBuyers),t.pctLmCb+'%'],['','td-cb','td-lm','td-lm'])
+    )}
+    ${buildSection('cTrx','🔄 Transaction',
+      buildTable(trend,latest,['Periode','All Trx','CB Trx','% CB','% LM','% AQ'],t=>[t.periode,n(t.totalTrx),n(t.cbTrx),t.pctCbTrx+'%',t.pctLmTrx+'%',t.pctAqTrx+'%'],['','','td-cb','td-cb','td-lm','td-aq'])
+    )}
+    ${buildSection('cGalon','💧 Gallon via Chatbot',
+      buildTable(trend,latest,['Periode','Total','CB Galon','% CB','LM CB Galon','% LM CB'],t=>[t.periode,n(t.totalGalon),n(t.cbGalon),t.pctCbGalon+'%',n(t.lmCbGalon),t.pctLmCbGalon+'%'],['','','td-cb','td-cb','td-lm','td-lm'])
+    )}
+  `;
+
+  requestAnimationFrame(()=>drawCharts(trend,labels));
+}
+
+function buildSection(id,title,tableHTML){
+  return `<div class="trend-panel">
+    <div class="trend-panel-title">
+      <span>${title}</span>
+      <div class="vt-grp">
+        <button class="vt-btn active" onclick="swType('${id}','line',this)">Garis</button>
+        <button class="vt-btn" onclick="swType('${id}','bar',this)">Batang</button>
+        <button class="vt-btn" onclick="swType('${id}','combo',this)">Kombo</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="chart-card"><div style="position:relative;height:220px"><canvas id="${id}"></canvas></div></div>
+      <div class="chart-card"><div class="table-wrap" style="max-height:240px;overflow-y:auto">${tableHTML}</div></div>
+    </div>
+  </div>`;
+}
+
+function buildTable(trend,latestIdx,headers,rowFn,classes){
+  const ths=headers.map(h=>`<th>${h}</th>`).join('');
+  const trs=trend.map((t,i)=>{
+    const vals=rowFn(t);
+    const tds=vals.map((v,j)=>`<td class="${classes[j]||''} ${i===latestIdx?'td-latest':''}">${v}</td>`).join('');
+    return `<tr>${tds}</tr>`;
+  }).join('');
+  return `<table class="spark-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+function drawCharts(trend,labels){
+  const C={LM:'#00AEEF',AQ:'#EF5350',OT:'#F59E0B',CB:'#2E7D32',REP:'#7C3AED',GRAY:'#CBD5E1'};
+  const opts={responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{font:{size:10,family:'Plus Jakarta Sans'},boxWidth:10,boxHeight:10,padding:5}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#8AADC4',maxRotation:30,autoSkip:true,maxTicksLimit:8}},
+      y:{grid:{color:'rgba(0,174,239,0.05)'},ticks:{font:{size:10},color:'#8AADC4',callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}};
+
+  const ln=(label,data,color,fill=false)=>({label,data,type:'line',borderColor:color,backgroundColor:fill?color+'15':'transparent',borderWidth:2.5,pointRadius:3,fill,tension:0.4});
+  const mk=(id,dsets)=>{
+    const ctx=document.getElementById(id);if(!ctx)return;
+    destroyChart(id);
+    chartReg[id]=new Chart(ctx,{type:'line',data:{labels,datasets:dsets},options:opts});
+  };
+
+  mk('cUnit',[ln('% LM',trend.map(t=>t.pctLmUnit),C.LM,true),ln('% AQ',trend.map(t=>t.pctAqUnit),C.AQ),ln('% Others',trend.map(t=>t.pctOtUnit),C.OT)]);
+  mk('cBuyers',[ln('All Buyers',trend.map(t=>t.allBuyers),C.GRAY,true),ln('CB Buyers',trend.map(t=>t.cbBuyers),C.LM)]);
+  mk('cCbUser',[ln('CB Buyers',trend.map(t=>t.cbBuyers),C.LM,true),ln('Repeat',trend.map(t=>t.repeatBuyers),C.REP)]);
+  mk('cLMUser',[ln('CB Buyers',trend.map(t=>t.cbBuyers),C.GRAY,true),ln('LM CB Buyers',trend.map(t=>t.lmCbBuyers),C.LM)]);
+  mk('cTrx',[ln('All Trx',trend.map(t=>t.totalTrx),C.GRAY,true),ln('CB Trx',trend.map(t=>t.cbTrx),C.LM),ln('LM Trx',trend.map(t=>t.lmTrx),C.CB)]);
+  mk('cGalon',[ln('Total',trend.map(t=>t.totalGalon),C.GRAY,true),ln('CB Galon',trend.map(t=>t.cbGalon),C.LM),ln('LM CB',trend.map(t=>t.lmCbGalon),C.CB)]);
+}
+
+function swType(id,type,btn){
+  const ch=chartReg[id]; if(!ch) return;
+  btn.closest('.vt-grp').querySelectorAll('.vt-btn').forEach(b=>b.classList.toggle('active',b===btn));
+  if(type==='bar'){
+    ch.data.datasets.forEach((ds,i)=>{ds.type='bar';ds.backgroundColor=ds.borderColor+(i===0?'90':'BB');ds.fill=false;ds.borderRadius=5;ds.pointRadius=0;});
+    ch.config.type='bar';
+  } else if(type==='combo'){
+    ch.data.datasets.forEach((ds,i)=>{ds.type=i===0?'bar':'line';ds.backgroundColor=i===0?ds.borderColor+'90':ds.borderColor+'15';ds.fill=false;ds.borderRadius=5;ds.pointRadius=3;});
+    ch.config.type='bar';
+  } else {
+    ch.data.datasets.forEach((ds,i)=>{ds.type='line';ds.backgroundColor=i===0?ds.borderColor+'15':'transparent';ds.fill=i===0;ds.pointRadius=3;});
+    ch.config.type='line';
+  }
+  ch.update();
+}
+</script>
+</body>
+</html>

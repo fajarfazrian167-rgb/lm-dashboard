@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Minerale — Data MS Before</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-ov.show{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:440px;transform:translateY(16px);transition:transform .2s;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-ov.show .modal{transform:translateY(0)}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;font-weight:700;color:#4A6580;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.fi{width:100%;padding:10px 14px;border:1.5px solid #DCE8F5;border-radius:10px;font-size:13px;font-family:inherit;color:#0D2137;outline:none;background:#F8FBFF}
+.fi:focus{border-color:#00AEEF;box-shadow:0 0 0 3px rgba(0,174,239,.1)}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.btn-c{padding:9px 18px;background:#F0F7FF;color:#4A6580;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-s{padding:9px 20px;background:linear-gradient(135deg,#00AEEF,#0086C3);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.confirm-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.confirm-ov.show{opacity:1;pointer-events:all}
+.confirm-box{background:#fff;border-radius:14px;padding:24px;max-width:340px;width:100%}
+</style>
+</head>
+<body>
+<nav class="topnav" id="topnav"></nav>
+<div class="page-wrap" style="margin-top:76px">
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px" id="statsRow"></div>
+
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input type="text" class="table-search" placeholder="Cari nama outlet..." oninput="filterTable(this.value)">
+      <div style="display:flex;gap:8px">
+        <button class="btn-export" onclick="openAddModal()" style="background:linear-gradient(135deg,#00AEEF,#0086C3)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Outlet
+        </button>
+        <button class="btn-export" onclick="importFromSpreadsheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Import dari Spreadsheet
+        </button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="msTable">
+        <thead><tr>
+          <th>No</th><th>Nama Outlet</th><th class="center">% MS Before</th>
+          <th class="center">% MS After*</th><th class="center">% Growth</th>
+          <th>Catatan</th><th class="center">Aksi</th>
+        </tr></thead>
+        <tbody id="msTbody"></tbody>
+      </table>
+    </div>
+    <div style="padding:10px 18px;font-size:11px;color:#8AADC4;border-top:1px solid #F0F7FF">
+      *MS After dihitung otomatis dari data transaksi terkini (Galon LM ÷ Total Galon)
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov" id="modalOv" onclick="closeOutside(event)">
+  <div class="modal">
+    <div style="font-size:16px;font-weight:800;color:#0D2137;margin-bottom:18px" id="modalTitle">Tambah Outlet</div>
+    <input type="hidden" id="editKey">
+    <div class="fg">
+      <label class="fl">Nama Outlet *</label>
+      <input type="text" class="fi" id="fOutletName" placeholder="Sama persis dengan kolom C di spreadsheet">
+    </div>
+    <div class="fg">
+      <label class="fl">% MS Before *</label>
+      <input type="number" class="fi" id="fMsBefore" placeholder="Contoh: 25.5" min="0" max="100" step="0.1">
+    </div>
+    <div class="fg">
+      <label class="fl">Catatan</label>
+      <input type="text" class="fi" id="fNotes" placeholder="Opsional">
+    </div>
+    <div class="modal-foot">
+      <button class="btn-c" onclick="closeModal()">Batal</button>
+      <button class="btn-s" onclick="saveEntry()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-ov" id="confirmOv">
+  <div class="confirm-box">
+    <div style="font-size:15px;font-weight:800;margin-bottom:8px">Hapus Data?</div>
+    <div style="font-size:13px;color:#4A6580;margin-bottom:18px" id="confirmTxt"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-c" onclick="closeConfirm()">Batal</button>
+      <button style="padding:9px 18px;background:#EF5350;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer" onclick="confirmDel()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+let allData=[], editKey=null, deleteKey=null;
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!checkAuth()) return;
+  if(!CAN_MANAGE.includes(CURRENT_USER.role)){alert('Hanya Admin & PM yang bisa akses.');window.location.href='index.html';return;}
+  buildNav('ms-before');
+  loadAllData().then(()=>renderTable());
+});
+
+function renderTable(q=''){
+  const db=getMSBeforeDB();
+  const entries=Object.entries(db);
+  const filtered=q?entries.filter(([k])=>k.toLowerCase().includes(q.toLowerCase())):entries;
+
+  // Stats
+  document.getElementById('statsRow').innerHTML=`
+    <div class="kpi-card"><div class="kpi-label">Total Outlet</div><div class="kpi-value">${entries.length}</div></div>
+    <div class="kpi-card accent-green"><div class="kpi-label">Avg MS Before</div><div class="kpi-value">${entries.length?((entries.reduce((s,[,v])=>s+(v.msBefore||0),0)/entries.length).toFixed(1))+'%':'—'}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Dengan Growth+</div><div class="kpi-value" style="color:var(--lm-green)">${entries.filter(([k,v])=>{const o=getOutletStats(getRows()).find(s=>s.outlet===k);return o&&o.msAfter>(v.msBefore||0);}).length}</div></div>`;
+
+  const tbody=document.getElementById('msTbody');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:#8AADC4">Belum ada data MS Before. Klik "Tambah Outlet" untuk mulai.</td></tr>';return;}
+  
+  // Get MS After from live data
+  const outletStats={};
+  getOutletStats(getRows()).forEach(o=>outletStats[o.outlet]=o.msAfter);
+
+  tbody.innerHTML=filtered.map(([outlet,v],i)=>{
+    const msAfter=outletStats[outlet]??null;
+    const growth=msAfter!==null?(msAfter-(v.msBefore||0)).toFixed(1):null;
+    const gc=growth!==null?(Number(growth)>0?'color:#2E7D32':Number(growth)<0?'color:#EF5350':'color:#8AADC4'):'color:#8AADC4';
+    return`<tr>
+      <td style="color:#8AADC4">${i+1}</td>
+      <td><strong>${esc(outlet)}</strong></td>
+      <td class="center"><span class="chip blue">${v.msBefore??'—'}%</span></td>
+      <td class="center">${msAfter!==null?'<span class="chip green">'+msAfter+'%</span>':'<span style="color:#8AADC4">—</span>'}</td>
+      <td class="center" style="${gc};font-weight:700">${growth!==null?(Number(growth)>0?'+':'')+growth+'%':'—'}</td>
+      <td style="font-size:12px;color:#4A6580">${esc(v.notes||'')}</td>
+      <td class="center">
+        <div style="display:flex;gap:6px;justify-content:center">
+          <button onclick="openEdit('${outlet.replace(/'/g,"\\'")}',${v.msBefore},'${(v.notes||'').replace(/'/g,"\\'")}' )" style="padding:4px 10px;background:#EBF4FF;color:#00AEEF;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">Edit</button>
+          <button onclick="openDel('${outlet.replace(/'/g,"\\'")}' )" style="padding:4px 10px;background:#FFEBEE;color:#EF5350;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">Hapus</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterTable(q){renderTable(q);}
+
+function openAddModal(){
+  editKey=null;
+  document.getElementById('modalTitle').textContent='Tambah Outlet Baru';
+  document.getElementById('fOutletName').value='';document.getElementById('fOutletName').disabled=false;
+  document.getElementById('fMsBefore').value='';document.getElementById('fNotes').value='';
+  document.getElementById('modalOv').classList.add('show');
+}
+
+function openEdit(outlet,msBefore,notes){
+  editKey=outlet;
+  document.getElementById('modalTitle').textContent='Edit MS Before: '+outlet;
+  document.getElementById('fOutletName').value=outlet;document.getElementById('fOutletName').disabled=true;
+  document.getElementById('fMsBefore').value=msBefore;document.getElementById('fNotes').value=notes;
+  document.getElementById('modalOv').classList.add('show');
+}
+
+function closeModal(){document.getElementById('modalOv').classList.remove('show');editKey=null;}
+function closeOutside(e){if(e.target===document.getElementById('modalOv'))closeModal();}
+
+function saveEntry(){
+  const outlet=editKey||document.getElementById('fOutletName').value.trim();
+  const ms=parseFloat(document.getElementById('fMsBefore').value);
+  const notes=document.getElementById('fNotes').value.trim();
+  if(!outlet){showToast('Nama outlet wajib diisi','err');return;}
+  if(isNaN(ms)||ms<0||ms>100){showToast('MS Before harus 0-100','err');return;}
+  const db=getMSBeforeDB();
+  db[outlet]={msBefore:ms,notes,updatedAt:new Date().toISOString()};
+  saveMSBeforeDB(db);
+  showToast('Data disimpan ✓','ok');
+  closeModal(); renderTable();
+}
+
+function openDel(outlet){
+  deleteKey=outlet;
+  document.getElementById('confirmTxt').textContent=`Hapus data MS Before untuk "${outlet}"?`;
+  document.getElementById('confirmOv').classList.add('show');
+}
+function closeConfirm(){document.getElementById('confirmOv').classList.remove('show');deleteKey=null;}
+function confirmDel(){
+  if(!deleteKey)return;
+  const db=getMSBeforeDB();delete db[deleteKey];saveMSBeforeDB(db);
+  showToast('Dihapus','ok');closeConfirm();renderTable();
+}
+
+// Import outlet list dari spreadsheet yang sudah di-load
+function importFromSpreadsheet(){
+  const rows=getRows();
+  if(!rows.length){showToast('Data spreadsheet belum dimuat','err');return;}
+  const outlets=[...new Set(rows.map(r=>r[COL.OUTLET]).filter(Boolean))];
+  const db=getMSBeforeDB();
+  let added=0;
+  outlets.forEach(o=>{if(!db[o]){db[o]={msBefore:0,notes:'Import auto',updatedAt:new Date().toISOString()};added++;}});
+  saveMSBeforeDB(db);
+  showToast(`${added} outlet baru ditambahkan (MS Before = 0%, silakan edit)`, 'ok');
+  renderTable();
+}
+</script>
+</body>
+</html>

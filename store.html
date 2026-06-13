@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Minerale — Store</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav class="topnav" id="topnav"></nav>
+<div class="page-wrap" style="margin-top:76px">
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <div class="filter-toggle-group">
+      <button class="filter-toggle active" onclick="setSegmen(this,'ALL')">All Cosmo</button>
+      <button class="filter-toggle"        onclick="setSegmen(this,'APT')">Apartemen</button>
+      <button class="filter-toggle"        onclick="setSegmen(this,'PERUM')">Residensial</button>
+    </div>
+    <div class="filter-divider"></div>
+    <select class="fselect" id="fRegion"  onchange="applyFilters()"><option value="">Semua GRSM</option></select>
+    <select class="fselect" id="fRSM"     onchange="applyFilters()"><option value="">Semua RSM</option></select>
+    <select class="fselect" id="fTL"      onchange="applyFilters()"><option value="">Semua TL</option></select>
+    <select class="fselect" id="fPeriode" onchange="applyFilters()"><option value="">Semua Periode</option></select>
+    <select class="fselect" id="fStatus"  onchange="applyFilters()"><option value="">Semua Status</option></select>
+    <button class="btn-reset" onclick="resetFilters()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg> Reset
+    </button>
+  </div>
+
+  <!-- KPI SUMMARY ROW -->
+  <div class="kpi-grid" style="margin-bottom:16px" id="storeKpi"></div>
+
+  <!-- CHARTS ROW -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Top 10 Outlet — Qty LM</div>
+      </div>
+      <div style="position:relative;height:260px"><canvas id="cTopOutlet"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Distribusi % Chatbot Trx per Outlet</div>
+      </div>
+      <div style="position:relative;height:260px"><canvas id="cCbDist"></canvas></div>
+    </div>
+  </div>
+
+  <!-- RANKING TABLE -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input type="text" class="table-search" id="storeSearch" placeholder="Cari nama toko, TL, area..." oninput="filterStoreTable(this.value)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="row-count" id="storeCount"></span>
+        <button class="btn-export" onclick="exportCSV(getRows(),'LM_Store.csv')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="storeTable">
+        <thead><tr>
+          <th>Rank</th><th>Nama Toko</th><th>TL</th><th>Area</th>
+          <th class="center">Time Gone</th>
+          <th class="center">% MS Before</th><th class="center">% MS After</th><th class="center">% Growth</th><th class="center">KPI</th>
+          <th class="center">Buyers</th><th class="center">Switch LM</th><th class="center">CB Buyer</th><th class="center">Repeat CB</th><th class="center">LM CB Buyer</th>
+          <th class="center">Trx</th><th class="center">CB Trx</th><th class="center">LM CB Trx</th>
+          <th class="center">Galon Sold</th><th class="center">Galon CB</th><th class="center">LM Galon CB</th>
+          <th class="center" style="min-width:130px">Bobot</th><th class="center">Status</th>
+        </tr></thead>
+        <tbody id="storeTbody"><tr><td colspan="21" style="text-align:center;padding:40px;color:#8AADC4">Memuat...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay"><div class="loader-box"><div class="loader-spinner"></div><div class="loader-text">Memuat data...</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/charts.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+let storeData = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!checkAuth()) return;
+  buildNav('store');
+  loadAllData();
+  startAutoRefresh();
+});
+
+function renderPage() {
+  const rows = getRows();
+  storeData = getOutletStats(rows);
+  const m = computeMetrics(rows);
+
+  // KPI cards
+  document.getElementById('storeKpi').innerHTML = `
+    <div class="kpi-card accent-blue">
+      <div class="kpi-label">Total Outlet</div>
+      <div class="kpi-value">${m.totalOutlet}</div>
+      <div class="kpi-sub"><span class="chip green">Active: ${m.activeOutlet}</span> <span class="chip red">Inactive: ${m.inactiveOutlet}</span></div>
+    </div>
+    <div class="kpi-card accent-green">
+      <div class="kpi-label">Avg Bobot Nilai</div>
+      <div class="kpi-value">${storeData.length ? Math.round(storeData.reduce((s,o)=>s+o.bobot,0)/storeData.length) : 0}</div>
+      <div class="kpi-sub">rata-rata semua outlet</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Outlet ≥ 50% CB Trx</div>
+      <div class="kpi-value" style="color:var(--lm-green)">${storeData.filter(o=>o.pctCbTrx>=50).length}</div>
+      <div class="kpi-sub">dari ${storeData.length} outlet</div>
+    </div>
+    <div class="kpi-card accent-amber">
+      <div class="kpi-label">Outlet Bobot ≥ 70</div>
+      <div class="kpi-value" style="color:var(--amber)">${storeData.filter(o=>o.bobot>=70).length}</div>
+      <div class="kpi-sub">performa baik</div>
+    </div>`;
+
+  // Charts
+  renderStoreCharts(storeData);
+  renderStoreTable(storeData);
+}
+
+function renderStoreCharts(data) {
+  // Top 10 by LM Qty — horizontal bar, lebih bersih
+  const top10 = [...data].sort((a,b)=>b.lmQty-a.lmQty).slice(0,10);
+  destroyChart('cTopOutlet');
+  const ctx1 = document.getElementById('cTopOutlet');
+  if (ctx1 && top10.length) {
+    new Chart(ctx1, {
+      type:'bar',
+      data:{
+        labels: top10.map(o=>o.outlet.length>18?o.outlet.substring(0,18)+'…':o.outlet),
+        datasets:[
+          {
+            label:'LM Qty', data:top10.map(o=>o.lmQty),
+            backgroundColor:'rgba(0,174,239,0.85)', borderRadius:6,
+            borderSkipped:false,
+          },
+          {
+            label:'Total Qty', data:top10.map(o=>o.totalQty-o.lmQty),
+            backgroundColor:'rgba(220,232,245,0.7)', borderRadius:6,
+            borderSkipped:false,
+          },
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        indexAxis:'y',
+        plugins:{
+          legend:{position:'top',labels:{font:{size:11,family:'Plus Jakarta Sans'},boxWidth:10,boxHeight:10}},
+          tooltip:{callbacks:{label:ctx=>{
+            const all = top10[ctx.dataIndex];
+            if (ctx.datasetIndex===0) return ` LM: ${Number(all.lmQty).toLocaleString('id-ID')} (${all.totalQty?Math.round(all.lmQty/all.totalQty*100):0}%)`;
+            return ` Others: ${Number(all.totalQty-all.lmQty).toLocaleString('id-ID')}`;
+          }}}
+        },
+        scales:{
+          x:{stacked:true, grid:{color:'rgba(0,174,239,0.05)'}, ticks:{font:{size:10,family:'Plus Jakarta Sans'},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}},
+          y:{stacked:true, grid:{display:false}, ticks:{font:{size:11,family:'Plus Jakarta Sans',weight:'600'},color:'#0D2137'}}
+        }
+      }
+    });
+  }
+
+  // % Chatbot per outlet — combo: bar CB trx + line bobot
+  destroyChart('cCbDist');
+  const ctx2 = document.getElementById('cCbDist');
+  if (ctx2 && data.length) {
+    // Sort by pctCbTrx descending
+    const sorted = [...data].sort((a,b)=>b.pctCbTrx-a.pctCbTrx);
+    new Chart(ctx2, {
+      type:'bar',
+      data:{
+        labels: sorted.map(o=>o.outlet.length>14?o.outlet.substring(0,14)+'…':o.outlet),
+        datasets:[
+          {
+            type:'bar',
+            label:'% CB Trx',
+            data: sorted.map(o=>o.pctCbTrx),
+            backgroundColor: sorted.map(o=>o.pctCbTrx>=70?'rgba(46,125,50,0.8)':o.pctCbTrx>=40?'rgba(245,158,11,0.75)':'rgba(239,83,80,0.75)'),
+            borderRadius:5, borderSkipped:false,
+            yAxisID:'y', order:2,
+          },
+          {
+            type:'line',
+            label:'Bobot Nilai',
+            data: sorted.map(o=>o.bobot),
+            borderColor:'#7C3AED',
+            backgroundColor:'transparent',
+            borderWidth:2, pointRadius:3,
+            fill:false, tension:0.3,
+            yAxisID:'y', order:1,
+          }
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{position:'top',labels:{font:{size:11,family:'Plus Jakarta Sans'},boxWidth:10,boxHeight:10}},
+        },
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:9,family:'Plus Jakarta Sans'},maxRotation:45,autoSkip:true,maxTicksLimit:15}},
+          y:{min:0,max:100,grid:{color:'rgba(0,174,239,0.05)'},ticks:{font:{size:10},callback:v=>v+'%'}}
+        }
+      }
+    });
+  }
+}
+
+function renderStoreTable(data) {
+  const tbody = document.getElementById('storeTbody');
+  document.getElementById('storeCount').textContent = data.length + ' outlet';
+  if (!data.length) {
+    tbody.innerHTML='<tr><td colspan="21" style="text-align:center;padding:40px;color:#8AADC4">Tidak ada data</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(o => {
+    const rc = o.rank<=3?`rank-${o.rank}`:'rank-n';
+    const sb = o.statusStore==='ACTIVE'?'<span class="badge badge-active">Active</span>':'<span class="badge badge-inactive">Inactive</span>';
+    const bc = o.bobot>=70?'#2E7D32':o.bobot>=40?'#F59E0B':'#EF5350';
+    return `<tr>
+      <td class="center"><span class="rank-badge ${rc}">${o.rank}</span></td>
+      <td><strong>${esc(o.outlet)}</strong><div style="font-size:10px;color:#8AADC4">${esc(o.coverage)}</div></td>
+      <td style="font-size:12px">${esc(o.tl)}</td>
+      <td style="font-size:12px">${esc(o.area)}</td>
+      <td class="center"><span class="chip blue">${o.hk}h</span></td>
+      <td class="center">${n(o.buyerCount)}</td>
+      <td class="center" style="color:#00AEEF;font-weight:700">${n(o.cbBuyerCount)}</td>
+      <td class="center">${o.buyerPerDay}</td>
+      <td class="center">${o.cbBuyerPerDay}</td>
+      <td class="center" style="color:${o.growthBuyer>=0?'#2E7D32':'#EF5350'};font-weight:700">${o.vsLastWeekBuyer}</td>
+      <td class="center ${heatClass(o.pctCbBuyer)}">${o.pctCbBuyer}%</td>
+      <td class="center">${n(o.totalTrx)}</td>
+      <td class="center" style="color:#00AEEF;font-weight:700">${n(o.cbTrx)}</td>
+      <td class="center">${o.trxPerDay}</td>
+      <td class="center">${o.cbTrxPerDay}</td>
+      <td class="center" style="color:${o.growthTrx>=0?'#2E7D32':'#EF5350'};font-weight:700">${o.vsLastWeekTrx}</td>
+      <td class="center ${heatClass(o.pctCbTrx)}">${o.pctCbTrx}%</td>
+      <td class="center">${o.lmQtyPerDay}</td>
+      <td class="center">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:7px;background:#F0F7FF;border-radius:4px;overflow:hidden;min-width:60px">
+            <div style="height:100%;width:${o.bobot}%;background:${bc};border-radius:4px;transition:width 0.5s"></div>
+          </div>
+          <span style="font-weight:800;color:${bc};min-width:26px;font-size:13px">${o.bobot}</span>
+        </div>
+      </td>
+      <td class="center">${sb}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterStoreTable(q) {
+  const lower = q.toLowerCase();
+  const filtered = storeData.filter(o =>
+    (o.outlet||'').toLowerCase().includes(lower)||
+    (o.tl||'').toLowerCase().includes(lower)||
+    (o.area||'').toLowerCase().includes(lower)||
+    (o.coverage||'').toLowerCase().includes(lower)
+  );
+  renderStoreTable(filtered);
+}
+
+function setSegmen(btn,val) {
+  document.querySelectorAll('.filter-toggle').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  let el=document.getElementById('fSegmen');
+  if (!el){el=document.createElement('input');el.type='hidden';el.id='fSegmen';document.body.appendChild(el);}
+  el.value=val==='ALL'?'':val;
+  applyFilters();
+}
+</script>
+</body>
+</html>

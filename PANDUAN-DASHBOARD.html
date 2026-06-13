@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panduan Dashboard Le Minerale</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#F0F7FF;color:#0D2137;line-height:1.7}
+
+/* LAYOUT */
+.sidebar{position:fixed;left:0;top:0;width:260px;height:100vh;background:#0A1628;overflow-y:auto;z-index:100;padding:0 0 40px}
+.main{margin-left:260px;padding:40px}
+
+/* SIDEBAR */
+.sb-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+.sb-logo h1{color:#fff;font-size:15px;font-weight:800}
+.sb-logo p{color:rgba(255,255,255,.5);font-size:11px;margin-top:2px}
+.sb-section{padding:8px 12px 4px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-top:8px}
+.sb-link{display:block;padding:8px 16px;color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;font-weight:500;border-radius:8px;margin:2px 8px;transition:all .15s}
+.sb-link:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-link.active{background:#00AEEF;color:#fff}
+
+/* CONTENT */
+.page-title{font-size:28px;font-weight:800;color:#0D2137;margin-bottom:6px;letter-spacing:-.5px}
+.page-sub{font-size:14px;color:#8AADC4;margin-bottom:32px}
+
+h2{font-size:20px;font-weight:800;color:#0D2137;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid #00AEEF;letter-spacing:-.3px}
+h3{font-size:15px;font-weight:700;color:#003F8A;margin:24px 0 10px}
+p{margin-bottom:12px;font-size:14px;color:#4A6580}
+
+/* CODE */
+.code-block{background:#0D1B2A;border-radius:10px;padding:16px 20px;margin:12px 0;position:relative;overflow:hidden}
+.code-block pre{color:#E8F4FF;font-size:13px;font-family:'Courier New',monospace;line-height:1.6;overflow-x:auto}
+.code-file{background:#1E3A5F;color:#64B5F6;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px 6px 0 0;display:inline-block;margin-bottom:8px;font-family:monospace}
+.code-line{color:#4CAF50;font-weight:700}
+.code-comment{color:#78909C;font-style:italic}
+.code-val{color:#FFB74D}
+.code-key{color:#81D4FA}
+
+/* HIGHLIGHT BOXES */
+.info-box{background:#EBF4FF;border-left:4px solid #00AEEF;border-radius:0 10px 10px 0;padding:14px 18px;margin:16px 0}
+.warn-box{background:#FFF8E1;border-left:4px solid #F59E0B;border-radius:0 10px 10px 0;padding:14px 18px;margin:16px 0}
+.success-box{background:#E8F5E9;border-left:4px solid #2E7D32;border-radius:0 10px 10px 0;padding:14px 18px;margin:16px 0}
+.box-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.info-box .box-title{color:#00AEEF}
+.warn-box .box-title{color:#F59E0B}
+.success-box .box-title{color:#2E7D32}
+.box-body{font-size:13px;color:#4A6580}
+
+/* TABLE */
+.guide-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+.guide-table th{background:#EBF4FF;padding:10px 14px;text-align:left;font-weight:700;color:#003F8A;border-bottom:2px solid #00AEEF}
+.guide-table td{padding:10px 14px;border-bottom:1px solid #E0F0FF;color:#4A6580;vertical-align:top}
+.guide-table tr:hover td{background:#F5FBFF}
+.guide-table td:first-child{font-weight:600;color:#0D2137;white-space:nowrap}
+
+/* STEP */
+.step{display:flex;gap:14px;margin:12px 0;align-items:flex-start}
+.step-num{width:28px;height:28px;border-radius:50%;background:#00AEEF;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-body{flex:1}
+.step-body strong{display:block;font-size:14px;color:#0D2137;margin-bottom:2px}
+.step-body span{font-size:13px;color:#4A6580}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.badge-blue{background:#EBF4FF;color:#00AEEF}
+.badge-green{background:#E8F5E9;color:#2E7D32}
+.badge-red{background:#FFEBEE;color:#C62828}
+.badge-gray{background:#F1F5F9;color:#64748B}
+
+/* TOC */
+.toc{background:#fff;border:1px solid #DCE8F5;border-radius:14px;padding:20px 24px;margin-bottom:32px}
+.toc h4{font-size:13px;font-weight:800;color:#0D2137;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
+.toc ol{padding-left:20px}
+.toc li{font-size:13px;color:#4A6580;margin-bottom:4px}
+.toc a{color:#00AEEF;text-decoration:none;font-weight:500}
+.toc a:hover{text-decoration:underline}
+
+/* QUICK REF */
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:16px 0}
+.qr-card{background:#fff;border:1px solid #DCE8F5;border-radius:12px;padding:16px}
+.qr-card h4{font-size:13px;font-weight:800;color:#003F8A;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.qr-item{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #F0F7FF;font-size:12px}
+.qr-item:last-child{border:none}
+.qr-item span:first-child{color:#4A6580}
+.qr-item span:last-child{font-family:monospace;font-size:11px;background:#F0F7FF;padding:2px 6px;border-radius:4px;color:#0D2137;font-weight:600}
+
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-logo">
+    <h1>📋 Panduan Dashboard</h1>
+    <p>Le Minerale Cosmo Residensial</p>
+  </div>
+  <div class="sb-section">Overview</div>
+  <a href="#arsitektur" class="sb-link">🏗️ Arsitektur Sistem</a>
+  <a href="#data-source" class="sb-link">📊 Sumber Data</a>
+  <a href="#metrik" class="sb-link">📐 Cara Hitung Metrik</a>
+
+  <div class="sb-section">Konfigurasi</div>
+  <a href="#config" class="sb-link">⚙️ config.js</a>
+  <a href="#kolom" class="sb-link">🗂️ Mapping Kolom</a>
+  <a href="#users" class="sb-link">👤 Kelola User</a>
+
+  <div class="sb-section">Edit Dashboard</div>
+  <a href="#edit-summary" class="sb-link">📊 Edit Summary</a>
+  <a href="#edit-store" class="sb-link">🏪 Edit Store</a>
+  <a href="#edit-trend" class="sb-link">📈 Edit Trend</a>
+  <a href="#edit-filter" class="sb-link">🔍 Edit Filter</a>
+  <a href="#edit-chart" class="sb-link">📉 Edit Chart</a>
+
+  <div class="sb-section">Deploy</div>
+  <a href="#deploy" class="sb-link">🚀 Deploy Netlify</a>
+  <a href="#update" class="sb-link">🔄 Update Dashboard</a>
+  <a href="#troubleshoot" class="sb-link">🛠️ Troubleshoot</a>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="page-title">Panduan Dashboard Le Minerale</div>
+<div class="page-sub">Cosmo Residensial — Versi 9.0 | Dokumen lengkap untuk operasional dan pengembangan</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h4>📑 Daftar Isi</h4>
+  <ol>
+    <li><a href="#arsitektur">Arsitektur Sistem</a></li>
+    <li><a href="#data-source">Sumber Data Google Sheets</a></li>
+    <li><a href="#metrik">Cara Hitung Semua Metrik</a></li>
+    <li><a href="#config">File Konfigurasi (config.js)</a></li>
+    <li><a href="#kolom">Mapping Kolom Spreadsheet</a></li>
+    <li><a href="#users">Kelola User & Password</a></li>
+    <li><a href="#edit-summary">Edit Halaman Summary</a></li>
+    <li><a href="#edit-store">Edit Halaman Store</a></li>
+    <li><a href="#edit-trend">Edit Halaman Trend</a></li>
+    <li><a href="#edit-filter">Edit Filter & Dropdown</a></li>
+    <li><a href="#edit-chart">Edit Chart & Visualisasi</a></li>
+    <li><a href="#deploy">Deploy ke Netlify</a></li>
+    <li><a href="#update">Update Dashboard</a></li>
+    <li><a href="#troubleshoot">Troubleshoot</a></li>
+  </ol>
+</div>
+
+<!-- ================================================ -->
+<h2 id="arsitektur">🏗️ Arsitektur Sistem</h2>
+
+<div class="qr-grid">
+  <div class="qr-card">
+    <h4>📁 Struktur File</h4>
+    <div class="qr-item"><span>Halaman utama</span><span>index.html</span></div>
+    <div class="qr-item"><span>Halaman login</span><span>login.html</span></div>
+    <div class="qr-item"><span>Halaman Store</span><span>store.html</span></div>
+    <div class="qr-item"><span>Halaman MD & TL</span><span>md-tl.html</span></div>
+    <div class="qr-item"><span>Halaman Consumption</span><span>consumption.html</span></div>
+    <div class="qr-item"><span>Halaman Trend</span><span>trend.html</span></div>
+    <div class="qr-item"><span>Kelola User (Admin)</span><span>admin-users.html</span></div>
+  </div>
+  <div class="qr-card">
+    <h4>📂 File JavaScript</h4>
+    <div class="qr-item"><span>Konfigurasi utama</span><span>assets/js/config.js</span></div>
+    <div class="qr-item"><span>Fetch & hitung data</span><span>assets/js/data.js</span></div>
+    <div class="qr-item"><span>Login & session</span><span>assets/js/auth.js</span></div>
+    <div class="qr-item"><span>Chart/grafik</span><span>assets/js/charts.js</span></div>
+    <div class="qr-item"><span>Navigasi menu</span><span>assets/js/nav.js</span></div>
+  </div>
+  <div class="qr-card">
+    <h4>🌐 URL Dashboard</h4>
+    <div class="qr-item"><span>Login</span><span>…/login.html</span></div>
+    <div class="qr-item"><span>Summary</span><span>…/index.html</span></div>
+    <div class="qr-item"><span>Store</span><span>…/store.html</span></div>
+    <div class="qr-item"><span>MD & TL</span><span>…/md-tl.html</span></div>
+    <div class="qr-item"><span>Consumption</span><span>…/consumption.html</span></div>
+    <div class="qr-item"><span>Trend</span><span>…/trend.html</span></div>
+  </div>
+</div>
+
+<!-- ================================================ -->
+<h2 id="data-source">📊 Sumber Data Google Sheets</h2>
+
+<div class="info-box">
+  <div class="box-title">Cara Kerja</div>
+  <div class="box-body">Dashboard fetch data dari Google Sheets setiap <strong>5 menit</strong> otomatis. Data diambil via Google Visualization API (gratis, tanpa API key). Spreadsheet harus di-share ke <strong>"Anyone with the link → Viewer"</strong>.</div>
+</div>
+
+<h3>Sheet yang Digunakan</h3>
+<table class="guide-table">
+  <tr><th>Sheet</th><th>Fungsi</th><th>Status</th></tr>
+  <tr><td>MASTER DATA</td><td>Data Perumahan / semua transaksi</td><td><span class="badge badge-green">✅ Aktif</span></td></tr>
+  <tr><td>MASTER DATA EKMA</td><td>Data Apartemen (nanti)</td><td><span class="badge badge-gray">⏸️ Nonaktif</span></td></tr>
+</table>
+
+<h3>Cara Aktifkan Sheet Apartemen (saat sudah siap)</h3>
+<p>Buka <code>assets/js/config.js</code>, ubah baris ini:</p>
+<div class="code-block">
+<div class="code-file">assets/js/config.js — baris 7</div>
+<pre><span class="code-comment">// Sebelum (nonaktif):</span>
+<span class="code-key">SHEET_APARTEMEN</span>: <span class="code-val">''</span>,
+
+<span class="code-comment">// Sesudah (aktifkan):</span>
+<span class="code-key">SHEET_APARTEMEN</span>: <span class="code-val">'MASTER DATA EKMA'</span>,</pre>
+</div>
+
+<!-- ================================================ -->
+<h2 id="metrik">📐 Cara Hitung Semua Metrik</h2>
+
+<h3>Definisi Dasar</h3>
+<table class="guide-table">
+  <tr><th>Istilah</th><th>Definisi</th><th>Sumber Kolom</th></tr>
+  <tr><td>Unique Buyer</td><td>Satu customer unik = 1 nilai di kolom AG (Key_Sub)</td><td>Kolom AG</td></tr>
+  <tr><td>Transaksi</td><td>Setiap baris data = 1 transaksi</td><td>Setiap baris</td></tr>
+  <tr><td>Galon/Qty</td><td>Jumlah galon dari kolom P (Qty)</td><td>Kolom P</td></tr>
+  <tr><td>LM (Le Minerale)</td><td>Kolom N (Product) = "LE MINERALE"</td><td>Kolom N</td></tr>
+  <tr><td>AQUA</td><td>Kolom N (Product) = "AQUA"</td><td>Kolom N</td></tr>
+  <tr><td>Other</td><td>Semua produk selain LM dan AQUA</td><td>Kolom N</td></tr>
+  <tr><td>Chatbot</td><td>Kolom K (Status) = "NEW REG" atau "REPEAT"</td><td>Kolom K</td></tr>
+  <tr><td>Manual</td><td>Kolom K (Status) = "MANUAL"</td><td>Kolom K</td></tr>
+  <tr><td>Continue</td><td>Kolom AI (Status Store) = "AKTIF"</td><td>Kolom AI</td></tr>
+  <tr><td>Discontinue</td><td>Kolom AI (Status Store) = "PASIF"</td><td>Kolom AI</td></tr>
+  <tr><td>Apartemen</td><td>Kolom AF (Project) mengandung kata "APARTEMEN"</td><td>Kolom AF</td></tr>
+  <tr><td>Perumahan</td><td>Kolom AF (Project) mengandung kata "RESIDENSIAL" / "PERUMAHAN"</td><td>Kolom AF</td></tr>
+</table>
+
+<h3>Rumus Bobot Nilai</h3>
+<div class="code-block">
+<pre>Bobot = (Trx/Day Score × 40%) + (% CB Trx × 40%) + (% CB Buyers × 20%)
+
+Trx/Day Score = min(100, Trx/Day ÷ 10 × 100)
+→ Target 10 trx/hari = score 100
+→ 5 trx/hari = score 50
+→ &gt;10 trx/hari = tetap 100 (maksimal)
+
+Contoh:
+  Trx/Day = 8    → Score A = 80
+  % CB Trx = 65% → Score B = 65
+  % CB Buyers = 70% → Score C = 70
+  Bobot = (80×0.4) + (65×0.4) + (70×0.2) = 32 + 26 + 14 = 72</pre>
+</div>
+
+<h3>Chatbot Usership</h3>
+<table class="guide-table">
+  <tr><th>Metrik</th><th>Cara Hitung</th></tr>
+  <tr><td>Repeat Buyers</td><td>Jumlah unique AG (kolom AG) yang kolom K-nya = "REPEAT"</td></tr>
+  <tr><td>Lapsers</td><td>Unique AG yang PERNAH pakai chatbot, tapi transaksi TERAKHIR-nya = "MANUAL"</td></tr>
+  <tr><td>Switching to LM</td><td>Unique AG yang punya history beli produk LAIN + juga ada history beli LM</td></tr>
+</table>
+
+<h3>Consumption (Solus/Dualis/Triple)</h3>
+<table class="guide-table">
+  <tr><th>Kategori</th><th>Kondisi</th></tr>
+  <tr><td>Solus LM</td><td>Unique AG hanya pernah beli LE MINERALE</td></tr>
+  <tr><td>Solus AQ</td><td>Unique AG hanya pernah beli AQUA</td></tr>
+  <tr><td>Solus OT</td><td>Unique AG hanya pernah beli produk lain</td></tr>
+  <tr><td>Dualis LM & AQ</td><td>Unique AG pernah beli LM dan AQUA</td></tr>
+  <tr><td>Dualis LM & OT</td><td>Unique AG pernah beli LM dan produk lain</td></tr>
+  <tr><td>Dualis AQ & OT</td><td>Unique AG pernah beli AQUA dan produk lain</td></tr>
+  <tr><td>Triple</td><td>Unique AG pernah beli LM, AQUA, dan produk lain</td></tr>
+</table>
+
+<!-- ================================================ -->
+<h2 id="config">⚙️ File Konfigurasi</h2>
+
+<div class="code-block">
+<div class="code-file">assets/js/config.js</div>
+<pre><span class="code-key">const CONFIG</span> = {
+  <span class="code-comment">// Ganti dengan Spreadsheet ID Anda</span>
+  <span class="code-key">SPREADSHEET_ID</span>: <span class="code-val">'1m8-FwDgqfR2QWvrTC1opzIKstfrV-5WNkgDtUyEWchs'</span>,
+
+  <span class="code-comment">// Nama tab sheet utama (Perumahan)</span>
+  <span class="code-key">SHEET_NAME</span>: <span class="code-val">'MASTER DATA'</span>,
+
+  <span class="code-comment">// Sheet Apartemen — kosongkan jika belum siap</span>
+  <span class="code-key">SHEET_APARTEMEN</span>: <span class="code-val">''</span>,
+
+  <span class="code-comment">// true = pakai data dummy | false = pakai Google Sheets</span>
+  <span class="code-key">DEMO_MODE</span>: <span class="code-val">false</span>,
+
+  <span class="code-comment">// Auto refresh dalam milidetik (300000 = 5 menit)</span>
+  <span class="code-key">REFRESH_INTERVAL</span>: <span class="code-val">300000</span>,
+};</pre>
+</div>
+
+<h3>Cara mendapatkan Spreadsheet ID</h3>
+<p>Dari URL Google Sheets:<br>
+<code>https://docs.google.com/spreadsheets/d/<strong>1m8-FwDgqfR2QWvrTC1opzIKstfrV-5WNkgDtUyEWchs</strong>/edit</code><br>
+Bagian tebal = Spreadsheet ID</p>
+
+<!-- ================================================ -->
+<h2 id="kolom">🗂️ Mapping Kolom Spreadsheet</h2>
+
+<div class="info-box">
+  <div class="box-title">Penting</div>
+  <div class="box-body">Urutan kolom di config dimulai dari 0. Kolom A = 0, Kolom B = 1, Kolom C = 2, dst. Jika susunan kolom di spreadsheet berubah, update di <code>assets/js/config.js</code> bagian <code>const COL</code>.</div>
+</div>
+
+<table class="guide-table">
+  <tr><th>Kolom Sheet</th><th>Nama Header</th><th>Kode (COL.)</th><th>Digunakan Untuk</th></tr>
+  <tr><td>A (0)</td><td>Region</td><td>COL.REGION</td><td>Filter GRSM</td></tr>
+  <tr><td>B (1)</td><td>Area</td><td>COL.AREA</td><td>Filter Area</td></tr>
+  <tr><td>C (2)</td><td>Outlet</td><td>COL.OUTLET</td><td>Nama toko, hitung outlet unik</td></tr>
+  <tr><td>E (4)</td><td>Supply</td><td>COL.SUPPLY</td><td>Apartemen/Perumahan (backup)</td></tr>
+  <tr><td>I (8)</td><td>Customer Name</td><td>COL.CUSTOMER_NAME</td><td>Nama customer</td></tr>
+  <tr><td>K (10)</td><td>Status</td><td>COL.STATUS</td><td><strong>Chatbot vs Manual</strong> — NEW REG/REPEAT = chatbot</td></tr>
+  <tr><td>N (13)</td><td>Product</td><td>COL.PRODUCT</td><td><strong>Brand</strong> — LE MINERALE / AQUA / Others</td></tr>
+  <tr><td>P (15)</td><td>Qty</td><td>COL.QTY</td><td><strong>Jumlah galon</strong></td></tr>
+  <tr><td>Q (16)</td><td>Value</td><td>COL.VALUE</td><td>Nilai transaksi (Rp)</td></tr>
+  <tr><td>W (22)</td><td>MPP</td><td>COL.MPP</td><td>Nama MD/Merchandiser</td></tr>
+  <tr><td>Y (24)</td><td>TL</td><td>COL.TL</td><td>Nama Team Leader</td></tr>
+  <tr><td>AA (26)</td><td>RSM</td><td>COL.RSM</td><td>Filter RSM</td></tr>
+  <tr><td>AB (27)</td><td>Timestamp</td><td>COL.TIMESTAMP</td><td>Tanggal transaksi, Time Gone</td></tr>
+  <tr><td>AC (28)</td><td>Periode</td><td>COL.PERIODE</td><td>Week (WEEK 10, WEEK 11, dst)</td></tr>
+  <tr><td>AD (29)</td><td>Month</td><td>COL.MONTH</td><td>Bulan (MAR, APR, dst)</td></tr>
+  <tr><td>AE (30)</td><td>Year</td><td>COL.YEAR</td><td>Tahun (2026)</td></tr>
+  <tr><td>AF (31)</td><td>Project</td><td>COL.PROJECT</td><td>Apartemen vs Residensial</td></tr>
+  <tr><td>AG (32)</td><td>Key_Sub</td><td>COL.KEY_SUB</td><td><strong>Unique Buyer ID</strong> — kunci semua perhitungan buyer</td></tr>
+  <tr><td>AI (34)</td><td>Status Store</td><td>COL.STATUS_STORE</td><td><strong>Continue/Discontinue</strong> — AKTIF/PASIF</td></tr>
+</table>
+
+<!-- ================================================ -->
+<h2 id="users">👤 Kelola User & Password</h2>
+
+<h3>Cara Tambah/Edit User (tanpa coding)</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body"><strong>Login sebagai Admin atau Project Manager</strong><span>Gunakan akun admin.marketing@leminerale.co.id</span></div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body"><strong>Klik "Kelola User" di menu navigasi</strong><span>Menu ini hanya muncul untuk Admin dan PM</span></div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body"><strong>Klik "Tambah User" atau "Edit"</strong><span>Isi nama, email, passcode, dan role</span></div></div>
+
+<h3>Daftar User Default</h3>
+<table class="guide-table">
+  <tr><th>Nama</th><th>Email Login</th><th>Passcode</th><th>Role</th></tr>
+  <tr><td>FAJAR FAZRIAN</td><td>fajar.manager@leminerale.co.id</td><td>LM0001</td><td><span class="badge badge-blue">Project Manager</span></td></tr>
+  <tr><td>RAYU FEBRIANI</td><td>rayu.areacordinator@leminerale.co.id</td><td>LM0002</td><td><span class="badge badge-blue">Area Coordinator</span></td></tr>
+  <tr><td>NOVALINE AYU MUTIARA</td><td>novaline.teamleader@leminerale.co.id</td><td>LM0003</td><td><span class="badge badge-green">Team Leader</span></td></tr>
+  <tr><td>INDRI ROSMASARI</td><td>indri.teamleader@leminerale.co.id</td><td>LM0004</td><td><span class="badge badge-green">Team Leader</span></td></tr>
+  <tr><td>NUR DIAN KAMALIA</td><td>dian.teamleader@leminerale.co.id</td><td>LM0005</td><td><span class="badge badge-green">Team Leader</span></td></tr>
+  <tr><td>METTA METIA LAILA</td><td>metta.teamleader@leminerale.co.id</td><td>LM0006</td><td><span class="badge badge-green">Team Leader</span></td></tr>
+  <tr><td>RAHMI METIA PUTRI</td><td>rahmi.teamleader@leminerale.co.id</td><td>LM0007</td><td><span class="badge badge-green">Team Leader</span></td></tr>
+  <tr><td>DAVID OHE OHAHAU GEYA</td><td>david.teamleader@leminerale.co.id</td><td>LM0008</td><td><span class="badge badge-green">Team Leader</span></td></tr>
+  <tr><td>HERNY PRIYANTINY</td><td>herny.teamleader@leminerale.co.id</td><td>LM0009</td><td><span class="badge badge-green">Team Leader</span></td></tr>
+  <tr><td>KELVIN ANDIKA</td><td>kelvin.marketing@leminerale.co.id</td><td>LM00010</td><td><span class="badge badge-gray">Client</span></td></tr>
+  <tr><td>SALAMAH FAUZIAH</td><td>admin.marketing@leminerale.co.id</td><td>LM00011</td><td><span class="badge badge-red">Admin</span></td></tr>
+</table>
+
+<!-- ================================================ -->
+<h2 id="edit-summary">📊 Edit Halaman Summary</h2>
+
+<h3>Menghilangkan / Menambah KPI Card</h3>
+<div class="code-block">
+<div class="code-file">index.html — cari section "Point Chatbot Performance"</div>
+<pre><span class="code-comment">// Untuk MENGHILANGKAN section Buyers misalnya:</span>
+<span class="code-comment">// Hapus blok div ini di index.html:</span>
+&lt;div style="border-right:..."&gt;
+  &lt;div&gt;...BUYERS...&lt;/div&gt;
+&lt;/div&gt;</pre>
+</div>
+
+<h3>Mengubah Rumus Bobot Nilai</h3>
+<div class="code-block">
+<div class="code-file">assets/js/data.js — cari "calcBobot" atau "scoreA scoreB scoreC"</div>
+<pre><span class="code-comment">// Rumus saat ini:</span>
+const scoreA = Math.min(100, Math.round(trxPerDay/10*100)); <span class="code-comment">// 40%</span>
+const scoreB = pctCbTrx;   <span class="code-comment">// 40%</span>
+const scoreC = ...;        <span class="code-comment">// 20%</span>
+const bobot  = Math.round(scoreA*<span class="code-val">0.4</span> + scoreB*<span class="code-val">0.4</span> + scoreC*<span class="code-val">0.2</span>);
+
+<span class="code-comment">// Untuk ubah bobot, ganti angka 0.4, 0.4, 0.2</span>
+<span class="code-comment">// Total harus = 1.0 (100%)</span></pre>
+</div>
+
+<h3>Mengubah Target Trx/Day</h3>
+<div class="code-block">
+<div class="code-file">assets/js/data.js — cari "trxPerDay/10"</div>
+<pre><span class="code-comment">// Target sekarang = 10 trx/hari</span>
+const scoreA = Math.min(100, Math.round(trxPerDay/<span class="code-val">10</span>*100));
+
+<span class="code-comment">// Ganti 10 dengan angka target baru, misal 15:</span>
+const scoreA = Math.min(100, Math.round(trxPerDay/<span class="code-val">15</span>*100));</pre>
+</div>
+
+<!-- ================================================ -->
+<h2 id="edit-store">🏪 Edit Halaman Store</h2>
+
+<h3>Menambah Kolom di Tabel Store</h3>
+<div class="code-block">
+<div class="code-file">store.html — cari "thead" di tabel storeTable</div>
+<pre><span class="code-comment">// Tambah header kolom baru di thead:</span>
+&lt;th class="center"&gt;<span class="code-val">Kolom Baru</span>&lt;/th&gt;
+
+<span class="code-comment">// Tambah data di tbody (dalam fungsi renderStoreTable):</span>
+&lt;td class="center"&gt;${<span class="code-val">o.nilaiKolomBaru</span>}&lt;/td&gt;</pre>
+</div>
+
+<h3>Mengubah Jumlah Outlet di Top Chart</h3>
+<div class="code-block">
+<div class="code-file">store.html — cari "slice(0,10)"</div>
+<pre><span class="code-comment">// Sekarang Top 10:</span>
+const top10 = [...data].sort(...).slice(0,<span class="code-val">10</span>);
+
+<span class="code-comment">// Ubah ke Top 15:</span>
+const top10 = [...data].sort(...).slice(0,<span class="code-val">15</span>);</pre>
+</div>
+
+<!-- ================================================ -->
+<h2 id="edit-trend">📈 Edit Halaman Trend</h2>
+
+<h3>Mengubah Jumlah Periode Default</h3>
+<div class="code-block">
+<div class="code-file">trend.html — cari "fN" select element</div>
+<pre><span class="code-comment">// Ubah option selected untuk default:</span>
+&lt;option value="<span class="code-val">5</span>"&gt;5 Terakhir&lt;/option&gt;   <span class="code-comment">← ini yang aktif</span>
+&lt;option value="8"&gt;8 Periode&lt;/option&gt;
+&lt;option value="12"&gt;12 Periode&lt;/option&gt;</pre>
+</div>
+
+<h3>Menambah Panel Trend Baru</h3>
+<div class="code-block">
+<div class="code-file">trend.html — di dalam buildTrendHTML function</div>
+<pre><span class="code-comment">// Tambah section baru di dalam template string:</span>
+${buildSection('<span class="code-val">cNama</span>','<span class="code-val">🆕 Nama Panel</span>',
+  buildTable(trend,latest,
+    ['Periode','Kolom 1','Kolom 2'],     <span class="code-comment">// header</span>
+    t=>[t.periode, t.nilaiA, t.nilaiB],  <span class="code-comment">// data</span>
+    ['','td-lm','td-cb']                 <span class="code-comment">// warna kolom</span>
+  )
+)}
+
+<span class="code-comment">// Lalu tambah chart-nya di drawCharts():</span>
+mk('<span class="code-val">cNama</span>',[
+  ln('Label', trend.map(t=>t.nilaiA), C.LM, true),
+  ln('Label 2', trend.map(t=>t.nilaiB), C.AQ),
+]);</pre>
+</div>
+
+<h3>Menghilangkan Panel Trend</h3>
+<div class="code-block">
+<div class="code-file">trend.html — hapus baris buildSection yang tidak diinginkan</div>
+<pre><span class="code-comment">// Contoh hapus panel LM Usership:</span>
+<span class="code-comment">// Hapus baris ini dari buildTrendHTML:</span>
+${buildSection('cLMUser','🏆 LM Usership', ...)}   <span class="code-comment">← HAPUS baris ini</span>
+
+<span class="code-comment">// Dan hapus baris ini dari drawCharts():</span>
+mk('cLMUser',[...]);   <span class="code-comment">← HAPUS baris ini juga</span></pre>
+</div>
+
+<!-- ================================================ -->
+<h2 id="edit-filter">🔍 Edit Filter & Dropdown</h2>
+
+<h3>Menambah Filter Baru</h3>
+<div class="code-block">
+<div class="code-file">Langkah 1 — Tambah dropdown di HTML (misal di store.html)</div>
+<pre>&lt;select class="fselect" id="<span class="code-val">fNamaFilter</span>" onchange="applyFilters()"&gt;
+  &lt;option value=""&gt;Semua Nama Filter&lt;/option&gt;
+&lt;/select&gt;</pre>
+</div>
+
+<div class="code-block">
+<div class="code-file">Langkah 2 — Isi pilihan di populateFilters() dalam data.js</div>
+<pre>fillSel('<span class="code-val">fNamaFilter</span>', unique(COL.<span class="code-val">KOLOM_TERKAIT</span>), 'Semua Nama Filter');</pre>
+</div>
+
+<div class="code-block">
+<div class="code-file">Langkah 3 — Tambah kondisi filter di applyFilters() dalam data.js</div>
+<pre>if (v('<span class="code-val">fNamaFilter</span>') && r[COL.<span class="code-val">KOLOM_TERKAIT</span>] !== v('<span class="code-val">fNamaFilter</span>')) return false;</pre>
+</div>
+
+<!-- ================================================ -->
+<h2 id="edit-chart">📉 Edit Chart & Visualisasi</h2>
+
+<h3>Mengubah Warna Chart</h3>
+<div class="code-block">
+<div class="code-file">assets/js/charts.js atau di dalam halaman masing-masing</div>
+<pre><span class="code-comment">// Warna utama yang dipakai:</span>
+const CLR = {
+  LM:   <span class="code-val">'#00AEEF'</span>,  <span class="code-comment">// Biru Le Minerale</span>
+  AQ:   <span class="code-val">'#EF5350'</span>,  <span class="code-comment">// Merah Aqua</span>
+  OT:   <span class="code-val">'#F59E0B'</span>,  <span class="code-comment">// Kuning Others</span>
+  CB:   <span class="code-val">'#2E7D32'</span>,  <span class="code-comment">// Hijau Chatbot/LM</span>
+  REP:  <span class="code-val">'#7C3AED'</span>,  <span class="code-comment">// Ungu Repeat</span>
+  GRAY: <span class="code-val">'#CBD5E1'</span>,  <span class="code-comment">// Abu Total</span>
+};</pre>
+</div>
+
+<h3>Mengubah Ukuran Font di Chart</h3>
+<div class="code-block">
+<div class="code-file">Cari "font:{size:" di file HTML atau charts.js</div>
+<pre><span class="code-comment">// Font label sumbu X dan Y:</span>
+ticks:{font:{size:<span class="code-val">10</span>,family:'Plus Jakarta Sans'}, ...}
+
+<span class="code-comment">// Font legend:</span>
+legend:{labels:{font:{size:<span class="code-val">11</span>,...}}}
+
+<span class="code-comment">// Ganti angka size sesuai kebutuhan</span></pre>
+</div>
+
+<h3>Mengubah Tema Warna Dashboard</h3>
+<div class="code-block">
+<div class="code-file">assets/js/nav.js — function applyTheme(name)</div>
+<pre><span class="code-comment">// Tema tersedia: 'light', 'dark', 'blue', 'green'</span>
+<span class="code-comment">// Klik ikon matahari di topbar untuk ganti tema</span>
+<span class="code-comment">// Tema tersimpan otomatis di browser</span>
+
+<span class="code-comment">// Untuk ubah warna default tema light:</span>
+light: {
+  '--lm-blue': <span class="code-val">'#00AEEF'</span>,    <span class="code-comment">// warna utama</span>
+  '--bg':      <span class="code-val">'#F0F7FF'</span>,    <span class="code-comment">// background</span>
+  ...
+}</pre>
+</div>
+
+<!-- ================================================ -->
+<h2 id="deploy">🚀 Deploy ke Netlify</h2>
+
+<div class="step"><div class="step-num">1</div><div class="step-body"><strong>Buka app.netlify.com</strong><span>Login dengan akun Anda</span></div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body"><strong>Pilih project leminerale-cosmo</strong><span>Klik project di dashboard Netlify</span></div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body"><strong>Drag folder lm-dashboard ke kotak deploy</strong><span>Kotak bertuliskan "Drag and drop your project folder here"</span></div></div>
+<div class="step"><div class="step-num">4</div><div class="step-body"><strong>Tunggu status "Published"</strong><span>Biasanya 15-30 detik</span></div></div>
+<div class="step"><div class="step-num">5</div><div class="step-body"><strong>Refresh browser</strong><span>Tekan F5 atau Ctrl+R untuk muat ulang dashboard</span></div></div>
+
+<div class="warn-box">
+  <div class="box-title">⚠️ Penting</div>
+  <div class="box-body">Selalu drag <strong>folder lm-dashboard</strong> (bukan isinya, bukan ZIP). Pastikan config.js sudah tersimpan sebelum drag ke Netlify.</div>
+</div>
+
+<!-- ================================================ -->
+<h2 id="update">🔄 Update Dashboard setelah Ada Perubahan</h2>
+
+<h3>Alur kerja yang disarankan</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body"><strong>Edit file di VS Code</strong><span>Buka folder lm-dashboard di VS Code</span></div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body"><strong>Test di Live Server</strong><span>Klik kanan index.html → Open with Live Server</span></div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body"><strong>Pastikan tampil benar</strong><span>Cek semua halaman: Summary, Store, MD&TL, Consumption, Trend</span></div></div>
+<div class="step"><div class="step-num">4</div><div class="step-body"><strong>Deploy ke Netlify</strong><span>Drag folder ke Netlify seperti biasa</span></div></div>
+
+<!-- ================================================ -->
+<h2 id="troubleshoot">🛠️ Troubleshoot</h2>
+
+<table class="guide-table">
+  <tr><th>Masalah</th><th>Penyebab</th><th>Solusi</th></tr>
+  <tr><td>Loading sangat lama</td><td>Data spreadsheet besar / internet lambat</td><td>Normal, tunggu. Pertimbangkan kurangi baris lama di spreadsheet</td></tr>
+  <tr><td>Data masih Demo Mode</td><td>DEMO_MODE: true di config.js</td><td>Ubah ke false, simpan, deploy ulang</td></tr>
+  <tr><td>Gagal fetch data</td><td>Spreadsheet belum di-share public</td><td>Share → Anyone with link → Viewer</td></tr>
+  <tr><td>Outlet count salah</td><td>Kolom AI tidak terisi atau berbeda penulisan</td><td>Pastikan kolom AI berisi "AKTIF" atau "PASIF" (kapital)</td></tr>
+  <tr><td>Bulan tidak urut</td><td>Kolom AD (Month) tidak konsisten</td><td>Pastikan format bulan: MAR, APR, MEI, JUN (bukan March, April)</td></tr>
+  <tr><td>Chatbot tidak terhitung</td><td>Kolom K tidak "NEW REG" atau "REPEAT"</td><td>Cek penulisan di spreadsheet, harus persis sama</td></tr>
+  <tr><td>Halaman "Dangerous" di Chrome</td><td>Domain Netlify baru di-flag Google</td><td>Klik "Hide details" → "this unsafe site". Hilang dalam 1-3 hari</td></tr>
+  <tr><td>Netlify hanya upload 2 file</td><td>Drag yang salah (isi folder bukan foldernya)</td><td>Drag folder lm-dashboard keseluruhan, bukan isi di dalamnya</td></tr>
+  <tr><td>Chart tidak muncul</td><td>Chart.js tidak terload (offline)</td><td>Pastikan ada koneksi internet saat buka dashboard</td></tr>
+</table>
+
+<div class="success-box">
+  <div class="box-title">✅ Kontak & Support</div>
+  <div class="box-body">Untuk perubahan fitur baru, penambahan halaman, atau perbaikan bug — kirimkan deskripsi kebutuhan dan screenshot ke developer. Sertakan nama file dan nomor baris jika memungkinkan.</div>
+</div>
+
+<br><br>
+<p style="text-align:center;color:#B8CDE0;font-size:12px">Le Minerale Cosmo Residensial Dashboard — Panduan v9.0 | Dibuat dengan ❤️</p>
+
+</div>
+
+<script>
+// Highlight active sidebar link
+document.querySelectorAll('.sb-link').forEach(link => {
+  link.addEventListener('click', function() {
+    document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+// Scroll spy
+window.addEventListener('scroll', () => {
+  const sections = document.querySelectorAll('h2[id]');
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  document.querySelectorAll('.sb-link').forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#'+current);
+  });
+});
+</script>
+</body>
+</html>

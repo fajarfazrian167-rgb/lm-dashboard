@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Minerale — Summary</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.cb-all-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cb-section{background:var(--lm-blue-pale);border:1px solid var(--lm-blue-light);border-radius:12px;padding:16px}
+.cb-section-title{font-size:11px;font-weight:700;color:var(--lm-blue-dark);text-transform:uppercase;letter-spacing:.06em;text-align:center;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--lm-blue-light)}
+.cb-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cb-item{background:#fff;border-radius:8px;padding:10px 12px;text-align:center}
+.cb-item-lbl{font-size:10px;color:var(--text-muted);font-weight:600;margin-bottom:3px}
+.cb-item-main{font-size:22px;font-weight:800;color:var(--text-primary);line-height:1}
+.cb-item-sub{font-size:13px;font-weight:700;color:var(--lm-blue);margin-top:2px}
+.cb-item-pct{font-size:10px;color:var(--text-muted);margin-top:2px}
+.donut-pct-label{font-size:13px;font-weight:800}
+.donut-panel{background:var(--lm-blue-pale);border:1px solid var(--lm-blue-light);border-radius:10px;padding:10px 8px;text-align:center}
+.donut-label{font-size:10px;font-weight:700;color:var(--lm-blue-dark);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.donut-legend{margin-top:8px;font-size:10px;display:flex;flex-direction:column;gap:3px;align-items:flex-start;padding:0 2px}
+.donut-legend span{display:flex;align-items:center;gap:4px;white-space:nowrap}
+</style>
+</head>
+<body>
+<nav class="topnav" id="topnav"></nav>
+<div class="page-wrap" style="margin-top:76px">
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <div class="filter-toggle-group">
+      <button class="filter-toggle active" data-val="ALL"   onclick="setSegmen(this,'ALL')">All Cosmo</button>
+      <button class="filter-toggle"        data-val="APT"   onclick="setSegmen(this,'APT')">Apartemen</button>
+      <button class="filter-toggle"        data-val="PERUM" onclick="setSegmen(this,'PERUM')">Residensial</button>
+    </div>
+    <div class="filter-divider"></div>
+    <select class="fselect" id="fRegion"  onchange="applyFilters()"><option value="">Semua GRSM</option></select>
+    <select class="fselect" id="fRSM"     onchange="applyFilters()"><option value="">Semua RSM</option></select>
+    <select class="fselect" id="fPeriode" onchange="applyFilters()"><option value="">Semua Periode</option></select>
+    <div class="filter-divider"></div>
+    <button class="btn-reset" onclick="resetFilters()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg> Reset
+    </button>
+  </div>
+
+  <!-- ROW 1: Performance Summary + Chatbot Usership -->
+  <div style="margin-bottom:16px">
+
+    <!-- Performance Summary -->
+    <div class="perf-card">
+      <div class="perf-header">
+        <span class="chart-title">Performance Summary</span>
+        <div class="outlet-toggle">
+          <button class="outlet-btn disc"      onclick="filterOutletStatus('DISC',this)">Discontinue</button>
+          <button class="outlet-btn all active" onclick="filterOutletStatus('ALL',this)">All Outlet</button>
+          <button class="outlet-btn cont"      onclick="filterOutletStatus('CONT',this)">Continue</button>
+        </div>
+      </div>
+      <div class="perf-meta">
+        <div class="perf-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Total Outlet: <strong id="pTotalOutlet">—</strong>
+        </div>
+        <div class="perf-meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Time Gone: <strong id="pTimeGone">—</strong> Hari
+        </div>
+      </div>
+      <div class="outlet-breakdown">
+        <div class="outlet-segment">
+          <div class="outlet-seg-title">Outlet Apartemen: <strong id="pAptTotal">—</strong></div>
+          <div class="outlet-stats">
+            <div class="outlet-stat cont"><div><div class="outlet-stat-num" id="pAptCont" style="cursor:pointer;text-decoration:underline" onclick="showOutletList('APT','active')">—</div><div class="outlet-stat-label">Continue</div></div></div>
+            <div class="outlet-stat disc"><div><div class="outlet-stat-num" id="pAptDisc" style="cursor:pointer;text-decoration:underline" onclick="showOutletList('APT','inactive')">—</div><div class="outlet-stat-label">Discontinue</div></div></div>
+          </div>
+        </div>
+        <div class="outlet-segment">
+          <div class="outlet-seg-title">Outlet Residence: <strong id="pPerumTotal">—</strong></div>
+          <div class="outlet-stats">
+            <div class="outlet-stat cont"><div><div class="outlet-stat-num" id="pPerumCont" style="cursor:pointer;text-decoration:underline" onclick="showOutletList('PERUM','active')">—</div><div class="outlet-stat-label">Continue</div></div></div>
+            <div class="outlet-stat disc"><div><div class="outlet-stat-num" id="pPerumDisc" style="cursor:pointer;text-decoration:underline" onclick="showOutletList('PERUM','inactive')">—</div><div class="outlet-stat-label">Discontinue</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- ROW 2: Point Chatbot Performance + Chatbot Usership — LAYOUT SEPERTI REFERENSI -->
+  <div style="display:grid;grid-template-columns:1fr 380px;gap:16px;margin-bottom:16px">
+
+    <!-- Point Chatbot Performance -->
+    <div class="chart-card">
+      <div class="chart-title" style="text-align:center;margin-bottom:14px;font-size:15px">Point Chatbot Performance</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--lm-blue-light);border-radius:10px;overflow:hidden">
+
+        <!-- BUYERS -->
+        <div style="border-right:1px solid var(--lm-blue-light)">
+          <div style="background:var(--lm-blue-pale);padding:8px;text-align:center;font-size:11px;font-weight:700;color:var(--lm-blue-dark);border-bottom:1px solid var(--lm-blue-light)">Buyers</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #F0F7FF">
+            <div style="padding:6px 8px;text-align:center;border-right:1px solid #F0F7FF">
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">Chatbot Buyers</div>
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">% LM Chatbot</div>
+            </div>
+            <div style="padding:6px 8px;text-align:center">
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">Chatbot Buyers</div>
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">% LM Chatbot</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr">
+            <div style="padding:12px 8px;text-align:center;border-right:1px solid #F0F7FF">
+              <div style="font-size:26px;font-weight:800;color:var(--text-primary);line-height:1" id="cbBuyersTotal">—</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px" id="cbBuyersPctTotal">—</div>
+            </div>
+            <div style="padding:12px 8px;text-align:center">
+              <div style="font-size:26px;font-weight:800;color:var(--lm-blue);line-height:1" id="cbBuyersPct">—%</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><span id="cbBuyersLM">—</span></div>
+              <div style="font-size:10px;color:var(--text-muted)" id="cbBuyersChatbot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRANSACTION -->
+        <div style="border-right:1px solid var(--lm-blue-light)">
+          <div style="background:var(--lm-blue-pale);padding:8px;text-align:center;font-size:11px;font-weight:700;color:var(--lm-blue-dark);border-bottom:1px solid var(--lm-blue-light)">Transaction</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #F0F7FF">
+            <div style="padding:6px 8px;text-align:center;border-right:1px solid #F0F7FF">
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">Chatbot Trx</div>
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">% LM Chatbot</div>
+            </div>
+            <div style="padding:6px 8px;text-align:center">
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">Chatbot Trx</div>
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">% LM Chatbot</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr">
+            <div style="padding:12px 8px;text-align:center;border-right:1px solid #F0F7FF">
+              <div style="font-size:26px;font-weight:800;color:var(--text-primary);line-height:1" id="cbTrxTotal">—</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px" id="cbTrxPctTotal">—</div>
+            </div>
+            <div style="padding:12px 8px;text-align:center">
+              <div style="font-size:26px;font-weight:800;color:var(--lm-blue);line-height:1" id="cbTrxPct">—%</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><span id="cbTrxLM">—</span></div>
+              <div style="font-size:10px;color:var(--text-muted)" id="cbTrxChatbot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GALLON -->
+        <div>
+          <div style="background:var(--lm-blue-pale);padding:8px;text-align:center;font-size:11px;font-weight:700;color:var(--lm-blue-dark);border-bottom:1px solid var(--lm-blue-light)">Gallon via Chatbot</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #F0F7FF">
+            <div style="padding:6px 8px;text-align:center;border-right:1px solid #F0F7FF">
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">Gallon Sold</div>
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">% LM Gallon</div>
+            </div>
+            <div style="padding:6px 8px;text-align:center">
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">Gallon Sold</div>
+              <div style="font-size:10px;color:var(--text-muted);font-weight:600">% LM Gallon</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr">
+            <div style="padding:12px 8px;text-align:center;border-right:1px solid #F0F7FF">
+              <div style="font-size:26px;font-weight:800;color:var(--text-primary);line-height:1" id="cbGallonTotal">—</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px" id="cbGallonPctTotal">—</div>
+            </div>
+            <div style="padding:12px 8px;text-align:center">
+              <div style="font-size:26px;font-weight:800;color:var(--lm-blue);line-height:1" id="cbGallonPct">—%</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><span id="cbGallonLM">—</span></div>
+              <div style="font-size:10px;color:var(--text-muted)" id="cbGallonChatbot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chatbot Usership — PINDAH KE SINI sejajar dengan Chatbot Performance -->
+    <div class="chart-card">
+      <div class="chart-title" style="text-align:center;margin-bottom:14px;font-size:15px">Chatbot Usership</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--lm-blue-light);border-radius:10px;overflow:hidden">
+        <div style="border-right:1px solid var(--lm-blue-light);padding:14px 8px;text-align:center">
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600;margin-bottom:6px">% Repeat Buyers</div>
+          <div style="font-size:28px;font-weight:800;color:var(--text-primary);line-height:1" id="usRepeat">—</div>
+          <div style="font-size:11px;color:var(--lm-blue);font-weight:600;margin-top:4px" id="usRepeatPct">—%</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px" id="usRepeatFrom"></div>
+        </div>
+        <div style="border-right:1px solid var(--lm-blue-light);padding:14px 8px;text-align:center">
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600;margin-bottom:6px">Lapsers</div>
+          <div style="font-size:28px;font-weight:800;color:var(--text-primary);line-height:1" id="usLapsers">—</div>
+          <div style="font-size:11px;color:var(--amber);font-weight:600;margin-top:4px" id="usLapsersPct">—%</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px" id="usLapsersFrom"></div>
+        </div>
+        <div style="padding:14px 8px;text-align:center">
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600;margin-bottom:6px">Switching to LM</div>
+          <div style="font-size:28px;font-weight:800;color:var(--text-primary);line-height:1" id="usSwitching">—</div>
+          <div style="font-size:11px;color:var(--lm-green);font-weight:600;margin-top:4px" id="usSwitchingPct">—%</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px" id="usSwitchingFrom"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Total Performance + Chatbot Performance — LAYOUT SEPERTI REFERENSI -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+    <!-- Total Performance: 1 besar kiri + 2 kecil kanan -->
+    <div class="chart-card">
+      <div class="chart-title" style="margin-bottom:14px;font-size:15px;text-align:center">Total Performance</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start">
+        <!-- Unit Share BESAR di kiri -->
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;text-align:center;margin-bottom:6px">Unit Share (Total)</div>
+          <div style="position:relative;height:180px"><canvas id="cUnitTotal"></canvas></div>
+          <div id="legUnitTotal" class="donut-legend" style="margin-top:6px;padding:0 4px"></div>
+        </div>
+        <!-- Buyers + Transaction KECIL di kanan (atas-bawah) -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);font-weight:600;text-align:center;margin-bottom:4px">Buyers Share (Total)</div>
+            <div style="position:relative;height:120px"><canvas id="cBuyersTotal"></canvas></div>
+            <div id="legBuyersTotal" class="donut-legend" style="margin-top:4px;font-size:9px"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);font-weight:600;text-align:center;margin-bottom:4px">Transaction Share (Total)</div>
+            <div style="position:relative;height:120px"><canvas id="cTrxTotal"></canvas></div>
+            <div id="legTrxTotal" class="donut-legend" style="margin-top:4px;font-size:9px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chatbot Performance: 1 besar kiri + 2 kecil kanan -->
+    <div class="chart-card">
+      <div class="chart-title" style="margin-bottom:14px;font-size:15px;text-align:center">Chatbot Performance</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start">
+        <!-- Unit Share BESAR di kiri -->
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600;text-align:center;margin-bottom:6px">Unit Share (Chatbot)</div>
+          <div style="position:relative;height:180px"><canvas id="cUnitCb"></canvas></div>
+          <div id="legUnitCb" class="donut-legend" style="margin-top:6px;padding:0 4px"></div>
+        </div>
+        <!-- Buyers + Transaction KECIL di kanan -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);font-weight:600;text-align:center;margin-bottom:4px">Buyers Share (Chatbot)</div>
+            <div style="position:relative;height:120px"><canvas id="cBuyersCb"></canvas></div>
+            <div id="legBuyersCb" class="donut-legend" style="margin-top:4px;font-size:9px"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);font-weight:600;text-align:center;margin-bottom:4px">Transaction Share (Chatbot)</div>
+            <div style="position:relative;height:120px"><canvas id="cTrxCb"></canvas></div>
+            <div id="legTrxCb" class="donut-legend" style="margin-top:4px;font-size:9px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay"><div class="loader-box"><div class="loader-spinner"></div><div class="loader-text">Memuat data...</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/charts.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!checkAuth()) return;
+  buildNav('index');
+  loadAllData();
+  startAutoRefresh();
+});
+
+function renderPage() {
+  const rows = getRows();
+  const m = computeMetrics(rows);
+
+  // Performance Summary
+  document.getElementById('pTotalOutlet').textContent = m.totalOutlet;
+  document.getElementById('pTimeGone').textContent    = m.timeGone;
+  document.getElementById('pAptTotal').textContent    = m.aptOutlet;
+  document.getElementById('pAptCont').textContent     = m.aptActive;
+  document.getElementById('pAptDisc').textContent     = m.aptInactive;
+  document.getElementById('pPerumTotal').textContent  = m.perumOutlet;
+  document.getElementById('pPerumCont').textContent   = m.perumActive;
+  document.getElementById('pPerumDisc').textContent   = m.perumInactive;
+
+  // Usership
+  const repPct = m.cbBuyers ? Math.round(m.repeatBuyers/m.cbBuyers*100) : 0;
+  const lapPct = m.cbBuyers ? Math.round(m.lapsers/m.cbBuyers*100) : 0;
+  const swPct  = m.totalBuyers ? Math.round(m.switchingToLM/m.totalBuyers*100) : 0;
+  const setT = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setT('usRepeat',    n(m.repeatBuyers));
+  setT('usRepeatPct', repPct+'%');
+  setT('usRepeatFrom','dari chatbot ('+n(m.cbBuyers)+')');
+  setT('usLapsers',    n(m.lapsers));
+  setT('usLapsersPct', lapPct+'%');
+  setT('usLapsersFrom','dari chatbot');
+  setT('usSwitching',    n(m.switchingToLM));
+  setT('usSwitchingPct', swPct+'%');
+  setT('usSwitchingFrom','dari total buyers');
+
+  // Point Chatbot Performance — SEMUA TAMPIL SESUAI LOGIKA BARU
+  // Point Chatbot Performance
+  const s = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+
+  // BUYERS
+  s('cbBuyersTotal',    n(m.cbBuyers));
+  s('cbBuyersPctTotal', n(m.totalBuyers)+' ('+m.pctCbBuyers+'%) from total');
+  s('cbBuyersPct',      m.pctLmCbBuyers+'%');
+  s('cbBuyersLM',       n(m.lmCbBuyers));
+  s('cbBuyersChatbot',  n(m.cbBuyers)+' ('+m.pctLmCbBuyers+'%) from chatbot');
+
+  // TRANSACTION
+  s('cbTrxTotal',    n(m.cbTrx));
+  s('cbTrxPctTotal', n(m.totalTrx)+' ('+m.pctCbTrx+'%) from total');
+  s('cbTrxPct',      m.pctLmCbTrx+'%');
+  s('cbTrxLM',       n(m.lmCbTrx));
+  s('cbTrxChatbot',  n(m.cbTrx)+' ('+m.pctLmCbTrx+'%) from chatbot');
+
+  // GALLON
+  s('cbGallonTotal',    n(m.cbQty));
+  s('cbGallonPctTotal', n(m.totalQty)+' ('+m.pctCbQty+'%) from total');
+  s('cbGallonPct',      m.pctLmCbQty+'%');
+  s('cbGallonLM',       n(m.lmCbQty));
+  s('cbGallonChatbot',  n(m.cbQty)+' ('+m.pctLmCbQty+'%) from chatbot');
+
+  // Donut charts — persen di tengah, layout besar/kecil
+  const labels = ['LM','AQ','Lainnya'];
+  const colors = [CLR.LM, CLR.AQ, CLR.OT];
+
+  const pctMid = (arr) => {
+    const t = arr.reduce((a,b)=>a+b,0);
+    return t ? Math.round(arr[0]/t*100)+'%' : '0%';
+  };
+
+  // Total Performance
+  makeDonut('cUnitTotal',   labels, m.unitShare,  colors, pctMid(m.unitShare));
+  makeDonut('cBuyersTotal', labels, m.buyerShare, colors, pctMid(m.buyerShare));
+  makeDonut('cTrxTotal',    labels, m.trxShare,   colors, pctMid(m.trxShare));
+
+  // Chatbot Performance
+  makeDonut('cUnitCb',   labels, m.cbUnitShare,  colors, pctMid(m.cbUnitShare));
+  makeDonut('cBuyersCb', labels, m.cbBuyerShare, colors, pctMid(m.cbBuyerShare));
+  makeDonut('cTrxCb',    labels, m.cbTrxShare,   colors, pctMid(m.cbTrxShare));
+
+  // Legends
+  const allVals = [m.unitShare,m.buyerShare,m.trxShare,m.cbUnitShare,m.cbBuyerShare,m.cbTrxShare];
+  ['UnitTotal','BuyersTotal','TrxTotal','UnitCb','BuyersCb','TrxCb'].forEach((k,i) => {
+    buildSmallLegend('leg'+k, labels, colors, allVals[i]);
+  });
+}
+
+function buildSmallLegend(elId, labels, colors, values) {
+  var el = document.getElementById(elId); if (!el) return;
+  var total = values.reduce(function(a,b){return a+b;},0);
+  var html = '';
+  for (var i=0; i<labels.length; i++) {
+    var pct = total ? Math.round(values[i]/total*100) : 0;
+    html += '<span style="display:flex;align-items:center;gap:4px;white-space:nowrap">';
+    html += '<span style="width:8px;height:8px;border-radius:2px;background:' + colors[i] + ';flex-shrink:0"></span>';
+    html += '<span>' + labels[i] + ': ' + Number(values[i]).toLocaleString('id-ID') + ' (' + pct + '%)</span>';
+    html += '</span>';
+  }
+  el.innerHTML = html;
+}
+
+
+function setSegmen(btn, val) {
+  document.querySelectorAll('.filter-toggle').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  let el = document.getElementById('fSegmen');
+  if (!el) { el=document.createElement('input');el.type='hidden';el.id='fSegmen';document.body.appendChild(el); }
+  el.value = val==='ALL'?'':val;
+  applyFilters();
+}
+
+function filterOutletStatus(status, btn) {
+  document.querySelectorAll('.outlet-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function showOutletList(segmen, status) {
+  var rows = getRows();
+  var isAct = (status === 'active');
+  var list;
+  if (segmen === 'APT') {
+    list = getOutletList(rows, function(o){ return IS_APT({31: o.project}) && (isAct ? IS_ACTIVE(o.statusStore) : !IS_ACTIVE(o.statusStore)); });
+  } else if (segmen === 'PERUM') {
+    list = getOutletList(rows, function(o){ return IS_PERUM({31: o.project}) && (isAct ? IS_ACTIVE(o.statusStore) : !IS_ACTIVE(o.statusStore)); });
+  } else {
+    list = getOutletList(rows, function(o){ return isAct ? IS_ACTIVE(o.statusStore) : !IS_ACTIVE(o.statusStore); });
+  }
+  var segLabel = segmen === 'APT' ? 'Apartemen' : segmen === 'PERUM' ? 'Residence' : 'All';
+  var stLabel  = isAct ? 'Continue (AKTIF)' : 'Discontinue (PASIF)';
+  document.getElementById('modalTitle').textContent = 'List Outlet ' + segLabel + ' - ' + stLabel + ' (' + list.length + ' outlet)';
+  document.getElementById('modalHead').innerHTML = '<th style="padding:10px 14px;font-size:10px;font-weight:700;color:#003F8A">No</th>' +
+    '<th style="padding:10px 14px;font-size:10px;font-weight:700;color:#003F8A">GRSM</th>' +
+    '<th style="padding:10px 14px;font-size:10px;font-weight:700;color:#003F8A">RSM</th>' +
+    '<th style="padding:10px 14px;font-size:10px;font-weight:700;color:#003F8A">Outlet</th>' +
+    '<th style="padding:10px 14px;font-size:10px;font-weight:700;color:#003F8A">Program</th>';
+  var rows2 = '';
+  for (var i = 0; i < list.length; i++) {
+    var o = list[i];
+    rows2 += '<tr style="border-bottom:1px solid #F0F7FF">';
+    rows2 += '<td style="padding:9px 14px;color:#8AADC4">' + (i+1) + '</td>';
+    rows2 += '<td style="padding:9px 14px;font-weight:600">' + esc(o.region) + '</td>';
+    rows2 += '<td style="padding:9px 14px">' + esc(o.rsm) + '</td>';
+    rows2 += '<td style="padding:9px 14px;color:#00AEEF;font-weight:700">' + esc(o.outlet) + '</td>';
+    rows2 += '<td style="padding:9px 14px;font-size:11px;color:#4A6580">' + esc(o.program) + '</td>';
+    rows2 += '</tr>';
+  }
+  if (!list.length) rows2 = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#8AADC4">Tidak ada data</td></tr>';
+  document.getElementById('modalBody').innerHTML = rows2;
+  document.getElementById('outletModal').style.display = 'flex';
+}
+
+
+function closeOutletModal() {
+  document.getElementById('outletModal').style.display = 'none';
+}
+
+</script>

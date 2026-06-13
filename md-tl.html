@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Minerale — MD & TL</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.view-tabs{display:flex;gap:6px;margin-bottom:16px}
+.view-tab{padding:8px 24px;border-radius:20px;border:1.5px solid var(--border);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--white);color:var(--text-secondary);transition:all .2s}
+.view-tab.active{background:var(--lm-blue);border-color:var(--lm-blue);color:#fff;box-shadow:0 2px 8px rgba(0,174,239,.3)}
+</style>
+</head>
+<body>
+<nav class="topnav" id="topnav"></nav>
+<div class="page-wrap" style="margin-top:76px">
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <select class="fselect" id="fRegion"  onchange="applyFilters()"><option value="">Semua GRSM</option></select>
+    <select class="fselect" id="fRSM"     onchange="applyFilters()"><option value="">Semua RSM</option></select>
+    <select class="fselect" id="fTL"      onchange="applyFilters()"><option value="">Semua TL</option></select>
+    <select class="fselect" id="fMPP"     onchange="applyFilters()"><option value="">Semua MD/MPP</option></select>
+    <select class="fselect" id="fPeriode" onchange="applyFilters()"><option value="">Semua Periode</option></select>
+    <button class="btn-reset" onclick="resetFilters()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg> Reset
+    </button>
+  </div>
+
+  <!-- VIEW TABS — TL / MD TERPISAH -->
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="switchView('tl',this)">👥 Team Leader (TL)</button>
+    <button class="view-tab"        onclick="switchView('md',this)">👤 MD / MPP</button>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid" style="margin-bottom:16px" id="mdtlKpi"></div>
+
+  <!-- CHARTS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title" id="chartTitle1">Top TL — Qty LM</div></div>
+      <div style="position:relative;height:240px"><canvas id="cTopBar"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title" id="chartTitle2">% Chatbot Trx per TL</div></div>
+      <div style="position:relative;height:240px"><canvas id="cCbBar"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TABLE / DRILL DOWN -->
+  <div id="viewTL">
+    <div style="font-size:12px;color:#8AADC4;margin-bottom:10px;font-weight:500">Klik nama TL untuk melihat detail MD di bawahnya ▼</div>
+    <div id="tlContainer"></div>
+  </div>
+
+  <div id="viewMD" style="display:none">
+    <div class="table-card">
+      <div class="table-toolbar">
+        <input type="text" class="table-search" id="mdSearch" placeholder="Cari nama MD, TL, outlet..." oninput="filterMDTable(this.value)">
+        <span class="row-count" id="mdCount"></span>
+      </div>
+      <div class="table-wrap">
+        <table id="mdTable">
+          <thead><tr>
+            <th>Rank</th><th>Nama MD</th><th>TL</th><th>RSM</th>
+            <th class="center">Outlet</th><th class="center">HK</th>
+            <th class="center">Buyer</th><th class="center">CB Buyer</th><th class="center">% CB Buyer</th>
+            <th class="center">Trx/Day</th><th class="center">% CB Trx</th>
+            <th class="center">Qty LM</th><th class="center" style="min-width:120px">Bobot Nilai</th>
+          </tr></thead>
+          <tbody id="mdTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="loading-overlay hidden" id="loadingOverlay"><div class="loader-box"><div class="loader-spinner"></div><div class="loader-text">Memuat data...</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/charts.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+let currentView = 'tl';
+let tlData = [], mdData = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!checkAuth()) return;
+  buildNav('md-tl');
+  loadAllData();
+  startAutoRefresh();
+});
+
+function renderPage() {
+  tlData = getTLStats(getRows());
+  // Flatten all MDs
+  mdData = [];
+  tlData.forEach(tl => {
+    tl.mpps.forEach(m => mdData.push({...m, tlName: tl.tl, rsmName: tl.rsm}));
+  });
+  mdData.sort((a,b)=>b.bobot-a.bobot).forEach((m,i)=>m.rank=i+1);
+
+  renderKpi();
+  renderCharts();
+  if (currentView === 'tl') renderTLView();
+  else renderMDView(mdData);
+}
+
+function renderKpi() {
+  const data = currentView==='tl' ? tlData : mdData;
+  const avgBobot = data.length ? Math.round(data.reduce((s,d)=>s+d.bobot,0)/data.length) : 0;
+  const good = data.filter(d=>d.bobot>=70).length;
+  const totalBuyer = data.reduce((s,d)=>s+(d.buyerCount||0),0);
+  document.getElementById('mdtlKpi').innerHTML = `
+    <div class="kpi-card accent-blue">
+      <div class="kpi-label">Total ${currentView==='tl'?'TL':'MD'}</div>
+      <div class="kpi-value">${data.length}</div>
+      <div class="kpi-sub">${currentView==='tl'?tlData.length+' Team Leader':mdData.length+' MD/MPP'}</div>
+    </div>
+    <div class="kpi-card accent-green">
+      <div class="kpi-label">Avg Bobot Nilai</div>
+      <div class="kpi-value">${avgBobot}</div>
+      <div class="kpi-sub">rata-rata performa</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Bobot ≥ 70</div>
+      <div class="kpi-value" style="color:var(--lm-green)">${good}</div>
+      <div class="kpi-sub">performa baik</div>
+    </div>
+    <div class="kpi-card accent-amber">
+      <div class="kpi-label">Total Buyers</div>
+      <div class="kpi-value sm">${n(totalBuyer)}</div>
+      <div class="kpi-sub">unique buyers</div>
+    </div>`;
+}
+
+function renderCharts() {
+  const data = currentView==='tl' ? tlData : mdData;
+  const top8 = [...data].sort((a,b)=>b.lmQty-a.lmQty).slice(0,8);
+  const name = d => currentView==='tl' ? d.tl : d.mpp;
+  const shortName = d => { const nm=name(d); return nm.length>14?nm.substring(0,14)+'…':nm; };
+
+  document.getElementById('chartTitle1').textContent = `Top ${currentView==='tl'?'TL':'MD'} — Qty LM`;
+  document.getElementById('chartTitle2').textContent = `% Chatbot Trx per ${currentView==='tl'?'TL':'MD'}`;
+
+  destroyChart('cTopBar');
+  const ctx1=document.getElementById('cTopBar');
+  if (ctx1 && top8.length) {
+    new Chart(ctx1,{
+      type:'bar',
+      data:{
+        labels:top8.map(shortName),
+        datasets:[
+          {label:'Qty LM',data:top8.map(d=>d.lmQty),backgroundColor:'rgba(0,174,239,0.8)',borderRadius:5},
+          {label:'Qty Total',data:top8.map(d=>d.totalQty),backgroundColor:'rgba(220,232,245,0.5)',borderRadius:5},
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{font:{size:11,family:'Plus Jakarta Sans'},boxWidth:12}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:10,family:'Plus Jakarta Sans'},maxRotation:30}},
+          y:{grid:{color:'rgba(0,174,239,0.06)'},ticks:{font:{size:10},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}
+      }
+    });
+  }
+
+  destroyChart('cCbBar');
+  const ctx2=document.getElementById('cCbBar');
+  if (ctx2 && data.length) {
+    new Chart(ctx2,{
+      type:'bar',
+      data:{
+        labels:data.map(shortName),
+        datasets:[{label:'% CB Trx',data:data.map(d=>d.pctCbTrx),
+          backgroundColor:data.map(d=>d.pctCbTrx>=70?'rgba(46,125,50,0.8)':d.pctCbTrx>=40?'rgba(245,158,11,0.8)':'rgba(239,83,80,0.8)'),
+          borderRadius:4}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:9,family:'Plus Jakarta Sans'},maxRotation:45}},
+          y:{min:0,max:100,grid:{color:'rgba(0,174,239,0.06)'},ticks:{font:{size:10},callback:v=>v+'%'}}}
+      }
+    });
+  }
+}
+
+function renderTLView() {
+  const container = document.getElementById('tlContainer');
+  if (!tlData.length) { container.innerHTML='<div style="text-align:center;padding:48px;color:#8AADC4">Tidak ada data</div>'; return; }
+  container.innerHTML = tlData.map(tl => {
+    const ini = tl.tl.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+    const pctCb = tl.totalTrx?Math.round(tl.cbTrx/tl.totalTrx*100):0;
+    const mdRows = tl.mpps.map(m => {
+      const rc=m.rank<=3?`rank-${m.rank}`:'rank-n';
+      const bc=m.bobot>=70?'#2E7D32':m.bobot>=40?'#F59E0B':'#EF5350';
+      return `<tr>
+        <td class="center"><span class="rank-badge ${rc}">${m.rank}</span></td>
+        <td><strong>${esc(m.mpp)}</strong></td>
+        <td class="center"><span class="chip blue">${m.outletCount}</span></td>
+        <td class="center"><span class="chip gray">${m.hk}h</span></td>
+        <td class="center">${n(m.buyerCount)}</td>
+        <td class="center" style="color:#00AEEF;font-weight:700">${n(m.cbBuyerCount)}</td>
+        <td class="center ${heatClass(m.pctCbBuyer)}">${m.pctCbBuyer}%</td>
+        <td class="center">${m.trxPerDay}</td>
+        <td class="center ${heatClass(m.pctCbTrx)}">${m.pctCbTrx}%</td>
+        <td class="center" style="color:#00AEEF;font-weight:700">${n(m.lmQty)}</td>
+        <td class="center">
+          <div style="display:flex;align-items:center;gap:5px">
+            <div style="flex:1;height:6px;background:#F0F7FF;border-radius:3px;overflow:hidden;min-width:50px">
+              <div style="height:100%;width:${m.bobot}%;background:${bc};border-radius:3px"></div>
+            </div>
+            <span style="font-weight:800;color:${bc};font-size:13px">${m.bobot}</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+    return `<div class="tl-card">
+      <div class="tl-header" onclick="toggleTL(this)">
+        <div class="tl-avatar">${ini}</div>
+        <div>
+          <div class="tl-name">${esc(tl.tl)}</div>
+          <div class="tl-meta">${esc(tl.rsm)} &bull; ${tl.outletCount} outlet &bull; ${tl.mpps.length} MD</div>
+        </div>
+        <div class="tl-kpis">
+          <div class="tl-kpi"><div class="tl-kpi-val">${n(tl.buyerCount)}</div><div class="tl-kpi-label">Buyers</div></div>
+          <div class="tl-kpi"><div class="tl-kpi-val">${n(tl.totalTrx)}</div><div class="tl-kpi-label">Trx</div></div>
+          <div class="tl-kpi"><div class="tl-kpi-val">${n(tl.lmQty)}</div><div class="tl-kpi-label">Qty LM</div></div>
+          <div class="tl-kpi"><div class="tl-kpi-val" style="color:${pctCb>=50?'#2E7D32':'#EF5350'}">${pctCb}%</div><div class="tl-kpi-label">% CB Trx</div></div>
+          <div class="tl-kpi"><div class="tl-kpi-val" style="color:${tl.bobot>=70?'#2E7D32':tl.bobot>=40?'#F59E0B':'#EF5350'}">${tl.bobot}</div><div class="tl-kpi-label">Bobot</div></div>
+        </div>
+        <svg class="tl-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="tl-body">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Rank</th><th>Nama MD</th><th class="center">Outlet</th><th class="center">HK</th>
+              <th class="center">Buyer</th><th class="center">CB Buyer</th><th class="center">% CB Buyer</th>
+              <th class="center">Trx/Day</th><th class="center">% CB Trx</th>
+              <th class="center">Qty LM</th><th style="min-width:120px">Bobot Nilai</th>
+            </tr></thead>
+            <tbody>${mdRows||'<tr><td colspan="11" style="text-align:center;padding:20px;color:#8AADC4">Tidak ada MD</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMDView(data) {
+  document.getElementById('mdCount').textContent = data.length+' MD';
+  const tbody = document.getElementById('mdTbody');
+  if (!data.length) { tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:40px;color:#8AADC4">Tidak ada data</td></tr>'; return; }
+  tbody.innerHTML = data.map(m => {
+    const rc=m.rank<=3?`rank-${m.rank}`:'rank-n';
+    const bc=m.bobot>=70?'#2E7D32':m.bobot>=40?'#F59E0B':'#EF5350';
+    return `<tr>
+      <td class="center"><span class="rank-badge ${rc}">${m.rank}</span></td>
+      <td><strong>${esc(m.mpp||m.tlName)}</strong></td>
+      <td style="font-size:12px">${esc(m.tl||m.tlName)}</td>
+      <td style="font-size:12px">${esc(m.rsm||m.rsmName)}</td>
+      <td class="center"><span class="chip blue">${m.outletCount}</span></td>
+      <td class="center"><span class="chip gray">${m.hk}h</span></td>
+      <td class="center">${n(m.buyerCount)}</td>
+      <td class="center" style="color:#00AEEF;font-weight:700">${n(m.cbBuyerCount)}</td>
+      <td class="center ${heatClass(m.pctCbBuyer)}">${m.pctCbBuyer}%</td>
+      <td class="center">${m.trxPerDay}</td>
+      <td class="center ${heatClass(m.pctCbTrx)}">${m.pctCbTrx}%</td>
+      <td class="center" style="color:#00AEEF;font-weight:700">${n(m.lmQty)}</td>
+      <td class="center">
+        <div style="display:flex;align-items:center;gap:5px">
+          <div style="flex:1;height:6px;background:#F0F7FF;border-radius:3px;overflow:hidden;min-width:50px">
+            <div style="height:100%;width:${m.bobot}%;background:${bc};border-radius:3px"></div>
+          </div>
+          <span style="font-weight:800;color:${bc};font-size:13px">${m.bobot}</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterMDTable(q) {
+  const lower=q.toLowerCase();
+  renderMDView(mdData.filter(m=>(m.mpp||'').toLowerCase().includes(lower)||(m.tl||m.tlName||'').toLowerCase().includes(lower)));
+}
+
+function switchView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.view-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('viewTL').style.display = view==='tl'?'block':'none';
+  document.getElementById('viewMD').style.display = view==='md'?'block':'none';
+  renderKpi();
+  renderCharts();
+  if (view==='tl') renderTLView();
+  else renderMDView(mdData);
+}
+
+function toggleTL(header) {
+  const body=header.nextElementSibling;
+  const chev=header.querySelector('.tl-chevron');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+</script>
+</body>
+</html>
