@@ -197,4 +197,4 @@ function applyTheme(name) {
       b.classList.toggle('active', b.dataset.theme===name);
     });
   }, 100);
-}
+
